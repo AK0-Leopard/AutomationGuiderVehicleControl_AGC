@@ -7,7 +7,7 @@ using com.mirle.ibg3k0.sc.Common;
 using com.mirle.ibg3k0.stc.Common;
 using com.mirle.ibg3k0.stc.Data.SecsData;
 
-namespace com.mirle.ibg3k0.sc.Data.SECS.AGVC.ASE
+namespace com.mirle.ibg3k0.sc.Data.SECS.AGVC.AGC
 {
     public class S2F49 : SXFY
     {

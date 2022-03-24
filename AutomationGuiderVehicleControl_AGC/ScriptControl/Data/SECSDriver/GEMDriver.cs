@@ -836,7 +836,7 @@ namespace com.mirle.ibg3k0.sc.Data.SECSDriver
         {
             if (line.Secs_Link_Stat == SCAppConstants.LinkStatus.LinkOK) return;
 
-            initialWithMCS();
+            //initialWithMCS();
 
             Dictionary<string, CommuncationInfo> dicCommunactionInfo =
                 scApp.getEQObjCacheManager().CommonInfo.dicCommunactionInfo;
@@ -857,6 +857,9 @@ namespace com.mirle.ibg3k0.sc.Data.SECSDriver
             {
                 timer.start();
             }
+
+            scApp.LineService.OnlineWithHostByHost();
+            line.ResumeToAuto(scApp.ReportBLL);
 
 
         }

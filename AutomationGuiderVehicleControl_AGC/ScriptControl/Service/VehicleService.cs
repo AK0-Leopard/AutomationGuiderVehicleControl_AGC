@@ -93,10 +93,10 @@ namespace com.mirle.ibg3k0.sc.Service
                 bool isTransferCmd = !SCUtility.isEmpty(cmd.TRANSFER_ID);
                 try
                 {
-                    if (isTransferCmd)
-                    {
-                        reportBLL.newReportTransferInitial(cmd.TRANSFER_ID, null);
-                    }
+                    //if (isTransferCmd)
+                    //{
+                    //    reportBLL.newReportTransferInitial(cmd.TRANSFER_ID, null);
+                    //}
                     List<AMCSREPORTQUEUE> reportqueues = new List<AMCSREPORTQUEUE>();
                     //using (var tx = SCUtility.getTransactionScope())
                     //{
@@ -125,6 +125,11 @@ namespace com.mirle.ibg3k0.sc.Service
                     }
                     if (isSuccess)
                     {
+                        if (isTransferCmd)
+                        {
+                            reportBLL.newReportTransferInitial(cmd.TRANSFER_ID, null);
+                        }
+
                         isSuccess &= sendMessage_ID_31_TRANS_REQUEST
                             (cmd.VH_ID, cmd.ID, active_type, cmd.CARRIER_ID,
                              cmd.SOURCE, cmd.DESTINATION,
@@ -751,6 +756,19 @@ namespace com.mirle.ibg3k0.sc.Service
             {
                 scApp.VehicleBLL.setAndPublishPositionReportInfo2Redis(vh.VEHICLE_ID, receiveStr);
                 //scApp.ReportBLL.newReportRunTimetatus(vh.VEHICLE_ID);
+                Task.Run(() => ReportVhStatus(vh));
+            }
+            private void ReportVhStatus(AVEHICLE vh)
+            {
+                try
+                {
+                    scApp.ReportBLL.newReportRunTimetatus(vh.VEHICLE_ID);
+                    scApp.ReportBLL.newReportBettryValus(vh.VEHICLE_ID);
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "Exception");
+                }
             }
             const int TOLERANCE_SCOPE = 50;
             private const ushort SEQNUM_MAX = 999;
@@ -1434,7 +1452,7 @@ namespace com.mirle.ibg3k0.sc.Service
                             bool isCreatReportInfoSuccess = false;
                             if (!isFromVirtualEQPort)
                             {
-                                isCreatReportInfoSuccess = scApp.ReportBLL.newReportUnloadArrivals(cmd.TRANSFER_ID, reportqueues,false);
+                                isCreatReportInfoSuccess = scApp.ReportBLL.newReportUnloadArrivals(cmd.TRANSFER_ID, reportqueues, false);
                             }
                             else
                             {
@@ -2715,7 +2733,7 @@ namespace com.mirle.ibg3k0.sc.Service
                                 CommandInitialFail(cmd);
                             }
                             #region hpr放空盒命令
-                            else if (DebugParameter.isActiveHPRScenario&& assignVH.isHPRVehicle && cmd.CMD_TYPE == E_CMD_TYPE.LoadUnload && cmd.SOURCE_PORT.StartsWith("HPR")) //HPR專用車下達到HPR取貨的LoadUnload命令以後，要補上一個放空盒的命令
+                            else if (DebugParameter.isActiveHPRScenario && assignVH.isHPRVehicle && cmd.CMD_TYPE == E_CMD_TYPE.LoadUnload && cmd.SOURCE_PORT.StartsWith("HPR")) //HPR專用車下達到HPR取貨的LoadUnload命令以後，要補上一個放空盒的命令
                             {
                                 string empty_cst_id = string.Empty;
                                 if (assignVH.HAS_CST_L)
@@ -2747,7 +2765,7 @@ namespace com.mirle.ibg3k0.sc.Service
                                         LOT_ID = "",
                                         cst_type = "",
                                         CHECKCODE = "4",
-                                        TRANSFERSTATE =0
+                                        TRANSFERSTATE = 0
                                     };
                                     bool is_process_success = scApp.TransferService.Creat(aTRANSFER);
                                     if (is_process_success)
@@ -3519,10 +3537,13 @@ namespace com.mirle.ibg3k0.sc.Service
                 {
                     doDataSysc(vh.VEHICLE_ID);
                     Send.AlarmReset(vh.VEHICLE_ID);
+                    Task.Run(() => scApp.ReportBLL.newReportVehicleAuto(vh.Real_ID, null));
+
                 }
                 if (e == VHModeStatus.Manual)
                 {
                     vh.ToSectionID = string.Empty;
+                    Task.Run(() => scApp.ReportBLL.newReportVehicleManual(vh.Real_ID, null));
                 }
             }
             catch (Exception ex)
@@ -4327,7 +4348,7 @@ namespace com.mirle.ibg3k0.sc.Service
                 bool has_cmd_excute = scApp.CMDBLL.cache.hasCmdExcute(vh.VEHICLE_ID);
                 if (!has_cmd_excute)
                 {
-                    if (vh.isHPRVehicle&& DebugParameter.isActiveHPRScenario)
+                    if (vh.isHPRVehicle && DebugParameter.isActiveHPRScenario)
                     {
                         askVhToParkForWait(vh);
                     }
@@ -4965,71 +4986,71 @@ namespace com.mirle.ibg3k0.sc.Service
             }
             //if (DebugParameter.isActiveHPRScenario) //開啟HPR邏輯的情況
             //{
-                List<ParkAdr> parkAdrs = scApp.ParkAdrDao.loadParkAdrs();
-                string parkAdr = string.Empty;
-                int distance = int.MaxValue;
-                bool alreadyAtParkAddress = false;
-                foreach (ParkAdr adr in parkAdrs)
+            List<ParkAdr> parkAdrs = scApp.ParkAdrDao.loadParkAdrs();
+            string parkAdr = string.Empty;
+            int distance = int.MaxValue;
+            bool alreadyAtParkAddress = false;
+            foreach (ParkAdr adr in parkAdrs)
+            {
+                if (adr.isForHPR && vh.isHPRVehicle)
                 {
-                    if (adr.isForHPR && vh.isHPRVehicle)
+                    if (SCUtility.isMatche(adr.address, vh.CUR_ADR_ID))
                     {
-                        if (SCUtility.isMatche(adr.address, vh.CUR_ADR_ID))
-                        {
-                            alreadyAtParkAddress = true;
-                            break;
-                        }
+                        alreadyAtParkAddress = true;
+                        break;
                     }
-                    if (!adr.isForHPR && !vh.isHPRVehicle)
+                }
+                if (!adr.isForHPR && !vh.isHPRVehicle)
+                {
+                    if (SCUtility.isMatche(adr.address, vh.CUR_ADR_ID))
                     {
-                        if (SCUtility.isMatche(adr.address, vh.CUR_ADR_ID))
-                        {
-                            alreadyAtParkAddress = true;
-                            break;
-                        }
+                        alreadyAtParkAddress = true;
+                        break;
                     }
+                }
 
-                    if (adr.isForHPR && !vh.isHPRVehicle)
-                    {
-                        continue;
-                    }
-                    if (!adr.isForHPR && vh.isHPRVehicle)
-                    {
-                        continue;
-                    }
-                    if (scApp.CMDBLL.cache.AddresshasCmdExcuted(adr.address))
-                    {
-                        continue;
-                    }
-                    if (scApp.VehicleBLL.hasVehicleOnAddress(adr.address))
-                    {
-                        continue;
-                    }
-                    int iFromAdr = 0;
-                    int iToAdr = 0;
-                    if (!int.TryParse(vh.CUR_ADR_ID, out iFromAdr)) continue;
-                    if (!int.TryParse(adr.address, out iToAdr)) continue;
-                    List<RouteInfo> routeInfos = scApp.NewRouteGuide.getFromToRoutesAddrToAddr(iFromAdr, iToAdr);
-                    if (routeInfos.Count < 1) continue;
-                    if (routeInfos[0].total_cost < distance)
-                    {
-                        distance = routeInfos[0].total_cost;
-                        parkAdr = adr.address;
-                    }
-                }
-                if (alreadyAtParkAddress)
+                if (adr.isForHPR && !vh.isHPRVehicle)
                 {
-                    return (true, "");
+                    continue;
                 }
-                if (string.IsNullOrWhiteSpace(parkAdr))
+                if (!adr.isForHPR && vh.isHPRVehicle)
                 {
-                    string meg = $"ask vh:{vh.VEHICLE_ID} to find park address. but could not find any suitable park address, current address:{vh.CUR_ADR_ID}";
-                    return (false, meg);
+                    continue;
                 }
-                else
+                if (scApp.CMDBLL.cache.AddresshasCmdExcuted(adr.address))
                 {
-                    var result = Command.Move(vh.VEHICLE_ID, parkAdr);
-                    return (result.isSuccess, "");
+                    continue;
                 }
+                if (scApp.VehicleBLL.hasVehicleOnAddress(adr.address))
+                {
+                    continue;
+                }
+                int iFromAdr = 0;
+                int iToAdr = 0;
+                if (!int.TryParse(vh.CUR_ADR_ID, out iFromAdr)) continue;
+                if (!int.TryParse(adr.address, out iToAdr)) continue;
+                List<RouteInfo> routeInfos = scApp.NewRouteGuide.getFromToRoutesAddrToAddr(iFromAdr, iToAdr);
+                if (routeInfos.Count < 1) continue;
+                if (routeInfos[0].total_cost < distance)
+                {
+                    distance = routeInfos[0].total_cost;
+                    parkAdr = adr.address;
+                }
+            }
+            if (alreadyAtParkAddress)
+            {
+                return (true, "");
+            }
+            if (string.IsNullOrWhiteSpace(parkAdr))
+            {
+                string meg = $"ask vh:{vh.VEHICLE_ID} to find park address. but could not find any suitable park address, current address:{vh.CUR_ADR_ID}";
+                return (false, meg);
+            }
+            else
+            {
+                var result = Command.Move(vh.VEHICLE_ID, parkAdr);
+                return (result.isSuccess, "");
+            }
             //}
             //else
             //{

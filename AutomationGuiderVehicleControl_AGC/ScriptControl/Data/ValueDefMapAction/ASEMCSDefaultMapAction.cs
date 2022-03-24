@@ -779,7 +779,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction
                         SCUtility.secsActionRecordMsg(scApp, true, s2f49_transfer);
                         //SCUtility.RecodeReportInfo(s2f49_transfer);
                         //if (!isProcessEAP(s2f49)) { return; }
-
+                        s2f49_transfer.REPITEMS.TRANINFO.TRANSFERINFOVALUE.CARRIERIDINFO.CPVAL = s2f49_transfer.REPITEMS.COMMINFO.COMMAINFOVALUE.COMMANDID.CPVAL;
                         S2F50 s2f50 = new S2F50();
                         s2f50.SystemByte = s2f49_transfer.SystemByte;
                         s2f50.SECSAgentName = scApp.EAPSecsAgentName;
@@ -2783,6 +2783,21 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction
             throw new NotImplementedException();
         }
         public override bool S6F11SendEmptyFoupDepositFail(string portID, List<AMCSREPORTQUEUE> reportQueues = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool S6F11SendVehicleBatteryValus(string vhID, List<AMCSREPORTQUEUE> reportQueues = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool S6F11SendVehicleAuto(string vhID, List<AMCSREPORTQUEUE> reportQueues = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool S6F11SendVehicleManual(string vhID, List<AMCSREPORTQUEUE> reportQueues = null)
         {
             throw new NotImplementedException();
         }

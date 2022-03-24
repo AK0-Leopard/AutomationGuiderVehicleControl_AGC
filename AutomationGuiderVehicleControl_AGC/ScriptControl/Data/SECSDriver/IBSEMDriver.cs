@@ -57,6 +57,9 @@ namespace com.mirle.ibg3k0.sc.Data.SECSDriver
         public abstract bool S6F11SendRunTimeStatus(string vhID, List<AMCSREPORTQUEUE> reportQueues = null);
         public abstract bool S6F11SendVehicleInstalled(string cmdID, List<AMCSREPORTQUEUE> reportQueues = null);
         public abstract bool S6F11SendVehicleRemoved(string cmdID, List<AMCSREPORTQUEUE> reportQueues = null);
+        public abstract bool S6F11SendVehicleBatteryValus(string vhID, List<AMCSREPORTQUEUE> reportQueues = null);
+        public abstract bool S6F11SendVehicleAuto(string vhID, List<AMCSREPORTQUEUE> reportQueues = null);
+        public abstract bool S6F11SendVehicleManual(string vhID, List<AMCSREPORTQUEUE> reportQueues = null);
         #endregion Transfer Event
         #region Port Event
         public abstract bool S6F11PortEventStateChanged(string cmdID, List<AMCSREPORTQUEUE> reportQueues = null);

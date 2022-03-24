@@ -19,7 +19,7 @@ using com.mirle.ibg3k0.bcf.Data.VO;
 using com.mirle.ibg3k0.sc.App;
 using com.mirle.ibg3k0.sc.BLL;
 using com.mirle.ibg3k0.sc.Common;
-using com.mirle.ibg3k0.sc.Data.SECS.AGVC.AT_S;
+using com.mirle.ibg3k0.sc.Data.SECS.AGVC.AGC;
 using com.mirle.ibg3k0.sc.Data.SECSDriver;
 using com.mirle.ibg3k0.sc.Data.VO;
 using com.mirle.ibg3k0.sc.ProtocolFormat.OHTMessage;
@@ -32,7 +32,7 @@ using System.Globalization;
 using System.Linq;
 using System.Transactions;
 
-namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
+namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AGC
 {
     public class MCSDefaultMapAction : IBSEMDriver, IValueDefMapAction
     {
@@ -88,7 +88,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             {
                 S1F3 s1f3 = ((S1F3)e.secsHandler.Parse<S1F3>(e));
                 SCUtility.secsActionRecordMsg(scApp, true, s1f3);
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                               Data: s1f3);
 
                 int count = s1f3.SVID.Count();
@@ -113,7 +113,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                         line.EnhancedVehiclesChecked = true;
                         s1f4.SV[i] = buildEnhancedAlarmsSetVIDItem();
                     }
-
                     else if (s1f3.SVID[i] == SECSConst.VID_EnhancedCarriers)
                     {
                         line.EnhancedCarriersChecked = true;
@@ -133,6 +132,10 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                     {
                         line.CurrentPortStateChecked = true;
                         s1f4.SV[i] = buildEnhanecdTransfersItem();
+                    }
+                    else if (s1f3.SVID[i] == SECSConst.VID_QueryALLEnhancedTransfers)
+                    {
+                        s1f4.SV[i] = buildQueryALLEnhanecdTransfersItem();
                     }
                     else if (s1f3.SVID[i] == SECSConst.VID_CurrentPortStates)
                     {
@@ -154,7 +157,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                         line.CurrentPortStateChecked = true;
                         s1f4.SV[i] = buildEqPortInfo();
                     }
-                    else if (s1f3.SVID[i] == SECSConst.VID_UnitAlarmList)
+                    else if (s1f3.SVID[i] == SECSConst.VID_UnitAlarmInfo)
                     {
                         line.CurrentPortStateChecked = true;
                         s1f4.SV[i] = buildUnitAlarmList();
@@ -169,11 +172,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                         line.CurrentPortStateChecked = true;
                         s1f4.SV[i] = buildPortLocationInfos();
                     }
-                    else if (s1f3.SVID[i] == SECSConst.VID_SpecVersion)
-                    {
-                        line.CurrentPortStateChecked = true;
-                        s1f4.SV[i] = buildSpecVersionInfo();
-                    }
                     else
                     {
                         s1f4.SV[i] = new SXFY();
@@ -181,7 +179,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 }
                 TrxSECS.ReturnCode rtnCode = ISECSControl.replySECS(bcfApp, s1f4);
                 SCUtility.secsActionRecordMsg(scApp, false, s1f4);
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                               Data: s1f4);
             }
             catch (Exception ex)
@@ -189,13 +187,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 logger.Error("AUOMCSDefaultMapAction has Error[Line Name:{0}],[Error method:{1}],[Error Message:{2}",
                     line.LINE_ID, "S1F3_Receive_Eqpt_Stat_Req", ex.ToString());
             }
-        }
-        private S6F11.RPTINFO.RPTITEM.VIDITEM_114 buildSpecVersionInfo()
-        {
-            S6F11.RPTINFO.RPTITEM.VIDITEM_114 items = new S6F11.RPTINFO.RPTITEM.VIDITEM_114();
-            items.SpecVersion = "v1.1";
-
-            return items;
         }
 
         private S6F11.RPTINFO.RPTITEM.VIDITEM_04 buildAlarmsSetVIDItem()
@@ -255,10 +246,12 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             };
             return item;
         }
+
+
         private S6F11.RPTINFO.RPTITEM.VIDITEM_51 buildEnhanecdCarriersVIDItem()
         {
             var in_line_carriers = scApp.CarrierBLL.db.loadCurrentInLineCarrier();
-            //in_line_carriers = in_line_carriers.Where(cst => cst.STATE == E_CARRIER_STATE.Installed).ToList(); //20210615 AT&S MCS要求已Wait In的Carrier 也要上報
+            in_line_carriers = in_line_carriers.Where(cst => cst.STATE == E_CARRIER_STATE.Installed).ToList();
             List<S6F11.RPTINFO.RPTITEM.ENHANCEDCARRIERINFO> enhanced_carier_info =
                 new List<S6F11.RPTINFO.RPTITEM.ENHANCEDCARRIERINFO>();
             foreach (ACARRIER carrier in in_line_carriers)
@@ -267,8 +260,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 S6F11.RPTINFO.RPTITEM.ENHANCEDCARRIERINFO info = new S6F11.RPTINFO.RPTITEM.ENHANCEDCARRIERINFO();
                 info.CarrierID = SCUtility.Trim(carrier.ID);
                 info.CarrierLoc = SCUtility.Trim(carrier.LOCATION);
-                info.CarrierZoneName = SCUtility.Trim(carrier.LOCATION);//20210615 AT&S MCS要求ZoneName也填Location
-                //info.CarrierZoneName = "";
+                info.CarrierZoneName = "";
                 info.InstallTime = carrier.INSTALLED_TIME?.ToString(SCAppConstants.TimestampFormat_16);
                 info.CarrierState = mcs_carrier_state;
                 enhanced_carier_info.Add(info);
@@ -332,6 +324,29 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 enhanced_transfer_cmds.Add(vid_itrm_13);
             }
             S6F11.RPTINFO.RPTITEM.VIDITEM_76 item = new S6F11.RPTINFO.RPTITEM.VIDITEM_76()
+            {
+                EnhancedTransferCmd = enhanced_transfer_cmds.ToArray()
+            };
+            return item;
+        }
+        private S6F11.RPTINFO.RPTITEM.VIDITEM_78 buildQueryALLEnhanecdTransfersItem()
+        {
+            var transfers = scApp.TransferBLL.db.transfer.loadUnfinishedTransfer();
+            List<S6F11.RPTINFO.RPTITEM.VIDITEM_13> enhanced_transfer_cmds = new List<S6F11.RPTINFO.RPTITEM.VIDITEM_13>();
+            foreach (var tran in transfers)
+            {
+                string transfer_state = SECSConst.convert2MCS(tran.TRANSFERSTATE);
+                var vid_itrm_13 = new S6F11.RPTINFO.RPTITEM.VIDITEM_13();
+                vid_itrm_13.TransferState = transfer_state;
+                vid_itrm_13.CommandInfo.CommandID = SCUtility.Trim(tran.ID, true);
+                vid_itrm_13.CommandInfo.Priority = tran.PRIORITY.ToString();
+                vid_itrm_13.CommandInfo.Replace = tran.REPLACE.ToString();
+                vid_itrm_13.TransferInfo.CarrierID = SCUtility.Trim(tran.CARRIER_ID, true);
+                vid_itrm_13.TransferInfo.SourcePort = SCUtility.Trim(tran.HOSTSOURCE, true);
+                vid_itrm_13.TransferInfo.DestPort = SCUtility.Trim(tran.HOSTDESTINATION, true);
+                enhanced_transfer_cmds.Add(vid_itrm_13);
+            }
+            S6F11.RPTINFO.RPTITEM.VIDITEM_78 item = new S6F11.RPTINFO.RPTITEM.VIDITEM_78()
             {
                 EnhancedTransferCmd = enhanced_transfer_cmds.ToArray()
             };
@@ -413,6 +428,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 string vh_state = SECSConst.convert2MCS(vh.State, vh.ChargeStatus);
                 string vh_communication = SECSConst.convert2MCS(vh.isTcpIpConnect, vh.IsCommunication(scApp.getBCFApplication()));
                 string vh_control_mode = SECSConst.convert2MCS(vh.isTcpIpConnect, vh.MODE_STATUS);
+                string vh_battery = vh.BatteryCapacity.ToString();
 
                 S6F11.RPTINFO.RPTITEM.MONITOREDVEHICLEINFO item = new S6F11.RPTINFO.RPTITEM.MONITOREDVEHICLEINFO();
                 item.VehicleID = vh_real_id;
@@ -422,6 +438,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 item.VehicleStatus = vh_state;
                 item.VehiclecCommunication = vh_communication;
                 item.VehcileControlMode = vh_control_mode;
+                item.BatteryValue = vh_battery;
                 items.MonitoredVehicles[i] = item;
             }
 
@@ -447,7 +464,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 }
                 else
                 {
-                    LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                    LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                                   Data: $"Port ID:{port_id} of adr:{port.ADR_ID} no define x、y");
                     continue;
                 }
@@ -648,22 +665,12 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 s2f42 = new S2F42();
                 s2f42.SystemByte = s2f41.SystemByte;
                 s2f42.SECSAgentName = scApp.EAPSecsAgentName;
-                s2f42.HCACK = SECSConst.HCACK_Confirm_Executed;
-
                 string mcs_cmd_id = string.Empty;
                 bool needToResume = false;
                 bool needToPause = false;
                 bool canCancelCmd = false;
                 bool canAbortCmd = false;
                 string cancel_abort_cmd_id = string.Empty;
-                bool needToCarrierUpdate = false;
-
-                string carrier_update_carrier_id = string.Empty;
-                string carrier_update_lot_id = string.Empty;
-                string carrier_update_carrier_type = string.Empty;
-                bool canDoPriorityUpdate = false;
-                int priority = 0;
-                string priorityUpdateCMDID = string.Empty;
                 switch (s2f41.RCMD)
                 {
                     case SECSConst.RCMD_Resume:
@@ -702,29 +709,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                         s2f42.HCACK = cancel_check_result.checkResult;
                         cancel_abort_cmd_id = cancel_check_result.cmdID;
                         break;
-                    case SECSConst.RCMD_CarrierUpdate:
-                        var carrierUpdate_check_result = checkHostCarrierUpdate(s2f41);
-                        needToCarrierUpdate = carrierUpdate_check_result.isOK;
-                        s2f42.HCACK = carrierUpdate_check_result.checkResult;
-                        //cancel_abort_cmd_id = carrierUpdate_check_result.cmdID;
-
-                        carrier_update_carrier_id = carrierUpdate_check_result.carrier_id;
-                        carrier_update_lot_id = carrierUpdate_check_result.lot_id;
-                        carrier_update_carrier_type = carrierUpdate_check_result.carrier_type;
-                        break;
-                    case SECSConst.RCMD_PriorityUpdate:
-                        var priority_update_check_result = checkHostCommandPriorityUpdate(s2f41);
-                        s2f42.HCACK = priority_update_check_result.checkResult;
-                        canDoPriorityUpdate = priority_update_check_result.isOK;
-                        priority = priority_update_check_result.priority;
-                        priorityUpdateCMDID = priority_update_check_result.cmdID;
-                        if (canDoPriorityUpdate)
-                        {
-                            bool temp = scApp.TransferService.Update(priorityUpdateCMDID, priority);
-                            s2f42.HCACK = temp? SECSConst.HCACK_Confirm: SECSConst.HCACK_Rejected;
-                        }
-                        break;
-
                 }
                 TrxSECS.ReturnCode rtnCode = ISECSControl.replySECS(bcfApp, s2f42);
                 SCUtility.secsActionRecordMsg(scApp, false, s2f42);
@@ -748,15 +732,8 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 if (canAbortCmd)
                 {
                     scApp.TransferService.AbortOrCancel(cancel_abort_cmd_id, ProtocolFormat.OHTMessage.CancelActionType.CmdAbort);
+
                 }
-                if (needToCarrierUpdate)
-                {
-                    scApp.CarrierBLL.db.updateLotIDCarrierType(carrier_update_carrier_id, carrier_update_lot_id, carrier_update_carrier_type);
-                    //scApp.TransferService.AbortOrCancel(cancel_abort_cmd_id, ProtocolFormat.OHTMessage.CancelActionType.CmdAbort);
-                }
-
-
-
             }
             catch (Exception ex)
             {
@@ -772,6 +749,8 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             if (command_id_item != null)
             {
                 command_id = command_id_item.CPVAL;
+                return (false, SECSConst.HCACK_Rejected, command_id);//由於AGVM尚未準備好Cancel流程，因此一律先拒絕。20210115
+
                 ATRANSFER cmd_mcs = scApp.CMDBLL.GetTransferByID(command_id);
                 if (cmd_mcs == null)
                 {
@@ -795,6 +774,8 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             if (command_id_item != null)
             {
                 command_id = command_id_item.CPVAL;
+                return (false, SECSConst.HCACK_Rejected, command_id);//由於AGVM尚未準備好Cancel流程，因此一律先拒絕。20210115
+
                 ATRANSFER cmd_mcs = scApp.CMDBLL.GetTransferByID(command_id);
                 if (cmd_mcs == null)
                 {
@@ -809,103 +790,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             return (is_ok, check_result, command_id);
         }
-
-        private (bool isOK, string checkResult, string carrier_id,string lot_id,string carrier_type) checkHostCarrierUpdate(S2F41 s2F41)
-        {
-            bool is_ok = true;
-            string check_result = SECSConst.HCACK_Confirm;
-            string carrier_id = string.Empty;
-            string lot_id = string.Empty;
-            string carrier_type = string.Empty;
-            var carrier_id_item = s2F41.REPITEMS.Where(item => SCUtility.isMatche(item.CPNAME, SECSConst.CPNAME_CarrierID)).FirstOrDefault();
-            if (carrier_id_item != null)
-            {
-                carrier_id = carrier_id_item.CPVAL;
-                ACARRIER carrier = scApp.CarrierBLL.db.getCarrier(carrier_id);
-                if (carrier == null)
-                {
-                    check_result = SECSConst.HCACK_Obj_Not_Exist;
-                    is_ok = false;
-                }
-            }
-            else
-            {
-                check_result = SECSConst.HCACK_Param_Invalid;
-                is_ok = false;
-            }
-
-
-
-            var lot_id_item = s2F41.REPITEMS.Where(item => SCUtility.isMatche(item.CPNAME, SECSConst.CPNAME_LotID)).FirstOrDefault();
-            if (lot_id_item != null)
-            {
-                lot_id = lot_id_item.CPVAL;
-            }
-            else
-            {
-                check_result = SECSConst.HCACK_Param_Invalid;
-                is_ok = false;
-            }
-            var carrierType_item = s2F41.REPITEMS.Where(item => SCUtility.isMatche(item.CPNAME, SECSConst.CPNAME_CarrierType)).FirstOrDefault();
-            if (carrierType_item != null)
-            {
-                carrier_type = carrierType_item.CPVAL;
-            }
-            else
-            {
-                check_result = SECSConst.HCACK_Param_Invalid;
-                is_ok = false;
-            }
-
-
-            return (is_ok, check_result, carrier_id, lot_id, carrier_type);
-        }
-
-        private (bool isOK, string checkResult, string cmdID, int priority) checkHostCommandPriorityUpdate(S2F41 s2F41)
-        {
-            bool is_ok = true;
-            string check_result = SECSConst.HCACK_Confirm;
-            string command_id = string.Empty;
-            string sPriority = string.Empty;
-            int priority = 0;
-            var command_id_item = s2F41.REPITEMS.Where(item => SCUtility.isMatche(item.CPNAME, SECSConst.CPNAME_CommandID)).FirstOrDefault();
-            if (command_id_item != null)
-            {
-                command_id = command_id_item.CPVAL;
-                ATRANSFER cmd_mcs = scApp.CMDBLL.GetTransferByID(command_id);
-                if (cmd_mcs == null)
-                {
-                    check_result = SECSConst.HCACK_Obj_Not_Exist;
-                    is_ok = false;
-                }
-            }
-            else
-            {
-                check_result = SECSConst.HCACK_Param_Invalid;
-                is_ok = false;
-            }
-
-            var priority_item = s2F41.REPITEMS.Where(item => SCUtility.isMatche(item.CPNAME, SECSConst.CPNAME_Priority)).FirstOrDefault();
-            if (priority_item != null)
-            {
-                sPriority = priority_item.CPVAL;
-                if (!int.TryParse(sPriority, out priority))
-                {
-                    check_result = SECSConst.HCACK_Obj_Not_Exist;
-                    is_ok = false;
-                }
-            }
-            else
-            {
-                check_result = SECSConst.HCACK_Param_Invalid;
-                is_ok = false;
-            }
-
-
-            return (is_ok, check_result, command_id, priority);
-        }
-
-
         protected override void S2F49ReceiveEnhancedRemoteCommandExtension(object sender, SECSEventArgs e)
         {
             try
@@ -919,12 +803,12 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 {
                     case "TRANSFER":
                         S2F49_TRANSFER s2f49_transfer = ((S2F49_TRANSFER)e.secsHandler.Parse<S2F49_TRANSFER>(e));
-                        LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                        LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                            Data: s2f49_transfer);
                         SCUtility.secsActionRecordMsg(scApp, true, s2f49_transfer);
                         //SCUtility.RecodeReportInfo(s2f49_transfer);
                         //if (!isProcessEAP(s2f49)) { return; }
-
+                        s2f49_transfer.REPITEMS.TRANINFO.TRANSFERINFOVALUE.CARRIERIDINFO.CPVAL = s2f49_transfer.REPITEMS.COMMINFO.COMMAINFOVALUE.COMMANDID.CPVAL;
                         S2F50 s2f50 = new S2F50();
                         s2f50.SystemByte = s2f49_transfer.SystemByte;
                         s2f50.SECSAgentName = scApp.EAPSecsAgentName;
@@ -949,13 +833,13 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                                 else
                                 {
                                     s2f50.HCACK = SECSConst.HCACK_Rejected;
-                                    LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: string.Empty,
+                                    LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: string.Empty,
                                                   Data: $"creat mcs command fail, command info:{transfer.ToString()}");
                                 }
-
+                                s2f50.COMMAND_ID = transfer.ID;
                                 TrxSECS.ReturnCode rtnCode = ISECSControl.replySECS(bcfApp, s2f50);
                                 SCUtility.secsActionRecordMsg(scApp, false, s2f50);
-                                LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                                LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                                    Data: s2f50);
                                 if (rtnCode != TrxSECS.ReturnCode.Normal)
                                 {
@@ -981,7 +865,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                         else
                         {
                             string xid = DateTime.Now.ToString(SCAppConstants.TimestampFormat_19);
-                            LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: string.Empty,
+                            LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: string.Empty,
                                           Data: rtnStr,
                                           XID: xid);
                             BCFApplication.onWarningMsg(this, new bcf.Common.LogEventArgs(rtnStr, xid));
@@ -1004,13 +888,10 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                         //等待Timer發現後會將此命令取下來並下命令給車子去執行
                         //(此處將再考慮是要透過Timer或是開Thread來監控這件事)
 
-                        //20210623 Mark 因為現場效率問題，暫時關閉Stage移動
-                        //var port = scApp.MapBLL.getPortByPortID(source_port_id);
-                        //AVEHICLE vh_test = scApp.VehicleBLL.cache.findBestSuitableVhStepByStepFromAdr(scApp.GuideBLL, scApp.CMDBLL, port.ADR_ID, port.LD_VH_TYPE);
-                        //if(vh_test != null)
-                        //{
-                        //    scApp.VehicleService.Command.Move(vh_test.VEHICLE_ID, port.ADR_ID);
-                        //}
+                        var port = scApp.MapBLL.getPortByPortID(source_port_id);
+                        AVEHICLE vh_test = scApp.VehicleBLL.cache.findBestSuitableVhStepByStepFromAdr(scApp.GuideBLL, scApp.CMDBLL, port.ADR_ID, port.LD_VH_TYPE);
+                        //scApp.VehicleBLL.callVehicleToMove(vh_test, port.ADR_ID);
+                        scApp.VehicleService.Command.Move(vh_test.VEHICLE_ID, port.ADR_ID);
                         break;
                 }
                 line.CommunicationIntervalWithMCS.Restart();
@@ -1032,7 +913,12 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             string priority = s2F49_TRANSFER.REPITEMS.COMMINFO.COMMAINFOVALUE.PRIORITY.CPVAL;
             string replace = s2F49_TRANSFER.REPITEMS.COMMINFO.COMMAINFOVALUE.REPLACE.CPVAL;
 
+            //string carrier_id = s2F49_TRANSFER.REPITEMS.TRANINFO.TRANSFERINFOVALUE.CARRIERIDINFO.CPVAL;
             string carrier_id = s2F49_TRANSFER.REPITEMS.TRANINFO.TRANSFERINFOVALUE.CARRIERIDINFO.CPVAL;
+            if (SCUtility.isEmpty(carrier_id))
+            {
+                s2F49_TRANSFER.REPITEMS.TRANINFO.TRANSFERINFOVALUE.CARRIERIDINFO.CPVAL = command_id;
+            }
             string source_port_or_vh_location_id = s2F49_TRANSFER.REPITEMS.TRANINFO.TRANSFERINFOVALUE.SOUINFO.CPVAL;
             string dest_port = s2F49_TRANSFER.REPITEMS.TRANINFO.TRANSFERINFOVALUE.DESTINFO.CPVAL;
 
@@ -1145,21 +1031,13 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 ////確認路徑是否可以行走
                 APORTSTATION source_port_station = scApp.PortStationBLL.OperateCatch.getPortStation(source_port_or_vh_location_id);
                 APORTSTATION dest_port_station = scApp.PortStationBLL.OperateCatch.getPortStation(dest_port);
-                if(
-                    (!SCUtility.isMatche(dest_port, scApp.HPREmptyCarrierVirtualPort)&&
-                    !SCUtility.isMatche(source_port_or_vh_location_id, scApp.HPREmptyCarrierVirtualPort))
-                    ||!DebugParameter.isActiveHPRScenario)//如果是要到虛擬EQ Port的命令，不要檢查路徑，因為路徑不存在。
+                isSuccess = scApp.GuideBLL.IsRoadWalkable(source_port_station.ADR_ID, dest_port_station.ADR_ID);
+                if (!isSuccess)
                 {
-                    isSuccess = scApp.GuideBLL.IsRoadWalkable(source_port_station.ADR_ID, dest_port_station.ADR_ID);
-                    if (!isSuccess)
-                    {
-                        check_result = $"MCS command id:{command_id} ,source port:{source_port_or_vh_location_id} to destination port:{dest_port} no path to go{Environment.NewLine}," +
-                            $"please check the road traffic status.";
-                        return (false, SECSConst.HCACK_Cannot_Perform_Now);
-                    }
+                    check_result = $"MCS command id:{command_id} ,source port:{source_port_or_vh_location_id} to destination port:{dest_port} no path to go{Environment.NewLine}," +
+                        $"please check the road traffic status.";
+                    return (false, SECSConst.HCACK_Cannot_Perform_Now);
                 }
-
-
             }
             //如果不是Port(則為指定車號)，要檢查是否從該車位置可以到達放貨地點
             else
@@ -1322,7 +1200,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
             }
             return true;
@@ -1331,18 +1209,15 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
         {
             try
             {
-                string control_state = SCAppConstants.LineHostControlState.convert2MES(line.Host_Control_State);
-
                 VIDCollection Vids = new VIDCollection();
-                Vids.VID_06_ControlState.CONTROLSTATE = control_state;
-                //Vids.VID_61_EqpName.EqpName = control_state;
+                Vids.VID_61_EqpName.EqpName = line.LINE_ID;
                 AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Control_Status_Local, Vids);
                 scApp.ReportBLL.insertMCSReport(mcs_queue);
                 S6F11SendMessage(mcs_queue);
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
             }
             return true;
@@ -1359,7 +1234,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
             }
             return true;
@@ -1377,7 +1252,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
             }
             return true;
@@ -1395,7 +1270,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
             }
             return true;
@@ -1413,7 +1288,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
             }
             return true;
@@ -1431,7 +1306,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
             }
             return true;
@@ -1449,7 +1324,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
             }
             return true;
@@ -1467,7 +1342,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
             }
             return true;
@@ -1485,7 +1360,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
             }
             return true;
@@ -1512,7 +1387,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
             }
             return true;
@@ -1538,7 +1413,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -1550,13 +1425,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 if (!isSend()) return true;
                 VTRANSFER vtransfer = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(cmdID);
                 VIDCollection vid_collection = AVIDINFO2VIDCollection(vtransfer);
-                if (forHPRSpecialReport)
-                {
-                    vid_collection.VID_115_PortID.PortID = scApp.HPREmptyCarrierVirtualPort;
-                }
                 AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Vehicle_Arrived, vid_collection);
-
-
                 if (reportQueues == null)
                 {
                     S6F11SendMessage(mcs_queue);
@@ -1569,7 +1438,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -1582,10 +1451,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 if (!isSend()) return true;
                 VTRANSFER vtransfer = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(cmdID);
                 VIDCollection vid_collection = AVIDINFO2VIDCollection(vtransfer);
-                if (forHPRSpecialReport)
-                {
-                    vid_collection.VID_115_PortID.PortID = scApp.HPREmptyCarrierVirtualPort;
-                }
                 AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Vehicle_Acquire_Started, vid_collection);
                 if (reportQueues == null)
                 {
@@ -1599,23 +1464,19 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
         }
 
-        public override bool S6F11SendVehicleAcquireCompleted(string cmdID, List<AMCSREPORTQUEUE> reportQueues = null,bool forHPRSpecialReport = false)
+        public override bool S6F11SendVehicleAcquireCompleted(string cmdID, List<AMCSREPORTQUEUE> reportQueues = null, bool forHPRSpecialReport = false)
         {
             try
             {
                 if (!isSend()) return true;
                 VTRANSFER vtransfer = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(cmdID);
                 VIDCollection vid_collection = AVIDINFO2VIDCollection(vtransfer);
-                if (forHPRSpecialReport)
-                {
-                    vid_collection.VID_115_PortID.PortID = scApp.HPREmptyCarrierVirtualPort;
-                }
                 AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Vehicle_Acquire_Completed, vid_collection);
                 if (reportQueues == null)
                 {
@@ -1629,7 +1490,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -1655,7 +1516,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -1681,7 +1542,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -1694,10 +1555,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 if (!isSend()) return true;
                 VTRANSFER vtransfer = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(cmdID);
                 VIDCollection vid_collection = AVIDINFO2VIDCollection(vtransfer);
-                if (forHPRSpecialReport)
-                {
-                    vid_collection.VID_115_PortID.PortID = scApp.HPREmptyCarrierVirtualPort;
-                }
                 AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Vehicle_Deposit_Started, vid_collection);
                 if (reportQueues == null)
                 {
@@ -1711,7 +1568,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -1724,10 +1581,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 if (!isSend()) return true;
                 VTRANSFER vtransfer = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(cmdID);
                 VIDCollection vid_collection = AVIDINFO2VIDCollection(vtransfer);
-                if (forHPRSpecialReport)
-                {
-                    vid_collection.VID_115_PortID.PortID = scApp.HPREmptyCarrierVirtualPort;
-                }
                 AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Vehicle_Deposit_Completed, vid_collection);
                 if (reportQueues == null)
                 {
@@ -1741,13 +1594,12 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
         }
 
-       
         public override bool S6F11SendCarrierInstalled(string vhRealID, string carrierID, string location, List<AMCSREPORTQUEUE> reportQueues = null)
         {
             try
@@ -1772,7 +1624,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -1797,7 +1649,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -1827,7 +1679,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -1839,10 +1691,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 if (!isSend()) return true;
                 VTRANSFER vtransfer = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(cmdID);
                 VIDCollection vid_collection = AVIDINFO2VIDCollection(vtransfer);
-                if (forHPRSpecialReport)
-                {
-                    vid_collection.VID_56_CarrierLoc.CarrierLoc = scApp.HPREmptyCarrierVirtualPort;
-                }
                 AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Carrier_Removed, vid_collection);
                 if (reportQueues == null)
                 {
@@ -1856,7 +1704,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -1882,11 +1730,12 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
         }
+
         public override bool S6F11SendTransferCompleted(string cmdID, List<AMCSREPORTQUEUE> reportQueues = null, bool forHPRSpecialReport = false)
         {
             try
@@ -1894,13 +1743,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 if (!isSend()) return true;
                 VTRANSFER vtransfer = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(cmdID);
                 VIDCollection vid_collection = AVIDINFO2VIDCollection(vtransfer);
-
-                if (forHPRSpecialReport)
-                {
-                    var vh = scApp.VehicleBLL.cache.getVehicle(vtransfer.VH_ID);
-                    vid_collection.VID_56_CarrierLoc.CarrierLoc = scApp.HPREmptyCarrierVirtualPort + vh.VEHICLE_ID.Trim().Last();
-                    vid_collection.VID_77_TransferCompleteInfo.TransferCompleteInfo.CarrierLoc = scApp.HPREmptyCarrierVirtualPort + vh.VEHICLE_ID.Trim().Last();
-                }
                 AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Transfer_Completed, vid_collection);
                 if (reportQueues == null)
                 {
@@ -1914,37 +1756,11 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
         }
-
-        //public override bool S6F11SendTransferCompleted(string cmdID, List<AMCSREPORTQUEUE> reportQueues = null)
-        //{
-        //    try
-        //    {
-        //        if (!isSend()) return true;
-        //        VTRANSFER vtransfer = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(cmdID);
-        //        VIDCollection vid_collection = AVIDINFO2VIDCollection(vtransfer,true);
-        //        AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Transfer_Completed, vid_collection);
-        //        if (reportQueues == null)
-        //        {
-        //            S6F11SendMessage(mcs_queue);
-        //        }
-        //        else
-        //        {
-        //            reportQueues.Add(mcs_queue);
-        //        }
-        //        return true;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
-        //           Data: ex);
-        //        return false;
-        //    }
-        //}
         public override bool S6F11SendTransferCompleted(VTRANSFER vtransfer, CompleteStatus completeStatus, List<AMCSREPORTQUEUE> reportQueues = null)
         {
             try
@@ -1978,7 +1794,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -2005,7 +1821,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -2031,7 +1847,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -2069,7 +1885,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
         }
 
 
-
         public override bool S6F11PortEventStateChanged(string cmdID, List<AMCSREPORTQUEUE> reportQueues = null)
         {
             try
@@ -2090,7 +1905,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -2132,7 +1947,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
             }
             return true;
@@ -2173,7 +1988,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
             }
             return true;
@@ -2212,9 +2027,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                         SXFY vid_item = null;
                         switch (vid)
                         {
-                            case SECSConst.VID_ControlState:
-                                vid_item = Vids.VID_06_ControlState;
-                                break;
                             case SECSConst.VID_EnhancedCarrierInfo:
                                 vid_item = Vids.VID_10_EnhancedCarriersInfo;
                                 break;
@@ -2402,7 +2214,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 SCUtility.secsActionRecordMsg(scApp, false, s6f11);
                 TrxSECS.ReturnCode rtnCode = ISECSControl.sendRecv<S6F12>(bcfApp, s6f11, out s6f12,
                     out abortSecs, out rtnMsg, null);
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: s6f11,
                    VehicleID: queue.VEHICLE_ID,
                    XID: queue.MCS_CMD_ID);
@@ -2410,7 +2222,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
                 SCUtility.actionRecordMsg(scApp, s6f11.StreamFunction, line.Real_ID,
                             "sendS6F11_common.", rtnCode.ToString());
                 //SCUtility.RecodeReportInfo(vh_id, mcs_cmd_id, s6f12, s6f11.CEID, rtnCode.ToString());
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: s6f12,
                    VehicleID: queue.VEHICLE_ID,
                    XID: queue.MCS_CMD_ID);
@@ -2605,19 +2417,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
 
             vid_collection.VID_54_CarrierID.CarrierID = carrier_id;
 
-            //HPR空CARRIER放在車上時，需要特別上報Location在AGV01EFP+車號(例1號車需要報"AGV01EFP1")
-            //if (forHPRSpecialReport)
-            //{
-            //    if (carrier_loc.StartsWith("AGV10"))//在車上
-            //    {
-            //        ACARRIER aCARRIER = scApp.CarrierBLL.db.getCarrier(carrier_id);
-            //        if (aCARRIER != null && SCUtility.isMatche(aCARRIER.HOSTDESTINATION, scApp.HPREmptyCarrierVirtualPort))
-            //        {
-            //            carrier_loc = "AGV01EFP" + vh.VEHICLE_ID.Trim().Last();
-            //        }
-            //    }
-            //}
-
             vid_collection.VID_56_CarrierLoc.CarrierLoc = carrier_loc;
 
             vid_collection.VID_58_CommandID.CommandID = command_id;
@@ -2647,10 +2446,11 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
 
             vid_collection.VID_72_VehicleState.VehicleState = vh_state;
 
-            vid_collection.VID_77_TransferCompleteInfo.TransferCompleteInfo.CarrierLoc = carrier_loc;
             vid_collection.VID_77_TransferCompleteInfo.TransferCompleteInfo.TransferInfo.CarrierID = carrier_id;
             vid_collection.VID_77_TransferCompleteInfo.TransferCompleteInfo.TransferInfo.SourcePort = source_port;
             vid_collection.VID_77_TransferCompleteInfo.TransferCompleteInfo.TransferInfo.DestPort = dest_port;
+            vid_collection.VID_77_TransferCompleteInfo.TransferCompleteInfo.CarrierLoc = carrier_loc;
+            vid_collection.VID_77_TransferCompleteInfo.TransferCompleteInfo.VehicleID = vh_real_id;
 
             //vid_collection.VID_80_CommandType.CommandType = "";
 
@@ -2785,7 +2585,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -2811,7 +2611,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -2839,7 +2639,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -2865,7 +2665,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -2891,7 +2691,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -2917,7 +2717,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             catch (Exception ex)
             {
-                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(ASEMCSDefaultMapAction), Device: DEVICE_NAME_MCS,
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(MCSDefaultMapAction), Device: DEVICE_NAME_MCS,
                    Data: ex);
                 return false;
             }
@@ -2943,87 +2743,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             return true;
         }
 
-
-        public override bool S6F11SendPortInService(string portID, List<AMCSREPORTQUEUE> reportQueues = null)
-        {
-            if (!isSend()) return true;
-            VIDCollection vid_collection = new VIDCollection();
-
-            vid_collection.VID_61_EqpName.EqpName = line.LINE_ID;
-            vid_collection.VID_115_PortID.PortID = portID;
-
-            AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Port_In_Service, vid_collection);
-            if (reportQueues == null)
-            {
-                S6F11SendMessage(mcs_queue);
-            }
-            else
-            {
-                reportQueues.Add(mcs_queue);
-            }
-            return true;
-        }
-
-
-        public override bool S6F11SendEmptyFoupRequest(string portID, List<AMCSREPORTQUEUE> reportQueues = null)
-        {
-            if (!isSend()) return true;
-            VIDCollection vid_collection = new VIDCollection();
-
-            vid_collection.VID_115_PortID.PortID = portID;
-
-            AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Empty_Foup_Request, vid_collection);
-            if (reportQueues == null)
-            {
-                S6F11SendMessage(mcs_queue);
-            }
-            else
-            {
-                reportQueues.Add(mcs_queue);
-            }
-            return true;
-        }
-
-        public override bool S6F11SendEmptyFoupDepositFail(string portID, List<AMCSREPORTQUEUE> reportQueues = null)
-        {
-            if (!isSend()) return true;
-            VIDCollection vid_collection = new VIDCollection();
-
-            vid_collection.VID_115_PortID.PortID = portID;
-
-            AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Empty_Foup_Request, vid_collection);
-            if (reportQueues == null)
-            {
-                S6F11SendMessage(mcs_queue);
-            }
-            else
-            {
-                reportQueues.Add(mcs_queue);
-            }
-            return true;
-        }
-
-
-        public override bool S6F11SendPortOutService(string portID, List<AMCSREPORTQUEUE> reportQueues = null)
-        {
-            if (!isSend()) return true;
-            VIDCollection vid_collection = new VIDCollection();
-
-            vid_collection.VID_61_EqpName.EqpName = line.LINE_ID;
-            vid_collection.VID_115_PortID.PortID = portID;
-
-            AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Port_Out_Of_Service, vid_collection);
-            if (reportQueues == null)
-            {
-                S6F11SendMessage(mcs_queue);
-            }
-            else
-            {
-                reportQueues.Add(mcs_queue);
-            }
-            return true;
-        }
-
         public override bool S6F11SendVehicleRemoved(string vhID, List<AMCSREPORTQUEUE> reportQueues = null)
         {
             if (!isSend()) return true;
@@ -3032,6 +2751,43 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             vid_collection.VID_70_VehicleID.VehicleID = vhID;
 
             AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Vehicle_Removed, vid_collection);
+            if (reportQueues == null)
+            {
+                S6F11SendMessage(mcs_queue);
+            }
+            else
+            {
+                reportQueues.Add(mcs_queue);
+            }
+            return true;
+        }
+
+        public override bool S6F11SendVehicleAuto(string vhID, List<AMCSREPORTQUEUE> reportQueues = null)
+        {
+            if (!isSend()) return true;
+            VIDCollection vid_collection = new VIDCollection();
+
+            vid_collection.VID_70_VehicleID.VehicleID = vhID;
+
+            AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Vehicle_Auto, vid_collection);
+            if (reportQueues == null)
+            {
+                S6F11SendMessage(mcs_queue);
+            }
+            else
+            {
+                reportQueues.Add(mcs_queue);
+            }
+            return true;
+        }
+        public override bool S6F11SendVehicleManual(string vhID, List<AMCSREPORTQUEUE> reportQueues = null)
+        {
+            if (!isSend()) return true;
+            VIDCollection vid_collection = new VIDCollection();
+
+            vid_collection.VID_70_VehicleID.VehicleID = vhID;
+
+            AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Vehicle_Mnaual, vid_collection);
             if (reportQueues == null)
             {
                 S6F11SendMessage(mcs_queue);
@@ -3070,7 +2826,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             vid_collection.VID_70_VehicleID.VehicleID = vh_real_id;
             vid_collection.VID_72_VehicleState.VehicleState = vh_state;
             vid_collection.VID_102_VehicleLastPosition.VehicleLastPosition = vh_last_position;
-            vid_collection.VID_101_BatteryValue.BatteryValue = vh_battery_value;
 
             AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Vehicle_RuntimeStatus, vid_collection);
             if (reportQueues == null)
@@ -3083,18 +2838,59 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AT_S
             }
             return true;
         }
-
         public override bool S6F11SendVehicleBatteryValus(string vhID, List<AMCSREPORTQUEUE> reportQueues = null)
         {
-            throw new NotImplementedException();
+            if (!isSend()) return true;
+            var vh = scApp.VehicleBLL.cache.getVehicle(vhID);
+            string vh_real_id = "";
+            string vh_state = "";
+            string vh_battery_value = "";
+            string vh_communication = "";
+            string vh_control_mode = "";
+            if (vh != null)
+            {
+                vh_real_id = vh?.Real_ID;
+                vh_state = SECSConst.convert2MCS(vh.State, vh.ChargeStatus);
+                vh_battery_value = vh.BatteryCapacity.ToString();
+                vh_communication = SECSConst.convert2MCS(vh.isTcpIpConnect, vh.IsCommunication(scApp.getBCFApplication()));
+                vh_control_mode = SECSConst.convert2MCS(vh.isTcpIpConnect, vh.MODE_STATUS);
+                double max_x = scApp.ReserveBLL.GetMaxHltMapAddress_x();
+                double t_x = (vh.X_Axis * -1) + max_x;
+                //vh_last_position = $"[{vh.X_Axis},{vh.Y_Axis}]";
+            }
+            VIDCollection vid_collection = new VIDCollection();
+
+            vid_collection.VID_70_VehicleID.VehicleID = vh_real_id;
+            vid_collection.VID_72_VehicleState.VehicleState = vh_state;
+            vid_collection.VID_101_BatteryValue.BatteryValue = vh_battery_value;
+
+            AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Vehicle_BatteryValue, vid_collection);
+            if (reportQueues == null)
+            {
+                S6F11SendMessage(mcs_queue);
+            }
+            else
+            {
+                reportQueues.Add(mcs_queue);
+            }
+            return true;
         }
 
-        public override bool S6F11SendVehicleAuto(string vhID, List<AMCSREPORTQUEUE> reportQueues = null)
+        public override bool S6F11SendPortInService(string portID, List<AMCSREPORTQUEUE> reportQueues = null)
         {
             throw new NotImplementedException();
         }
 
-        public override bool S6F11SendVehicleManual(string vhID, List<AMCSREPORTQUEUE> reportQueues = null)
+        public override bool S6F11SendPortOutService(string portID, List<AMCSREPORTQUEUE> reportQueues = null)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override bool S6F11SendEmptyFoupRequest(string portID, List<AMCSREPORTQUEUE> reportQueues = null)
+        {
+            throw new NotImplementedException();
+        }
+        public override bool S6F11SendEmptyFoupDepositFail(string portID, List<AMCSREPORTQUEUE> reportQueues = null)
         {
             throw new NotImplementedException();
         }
