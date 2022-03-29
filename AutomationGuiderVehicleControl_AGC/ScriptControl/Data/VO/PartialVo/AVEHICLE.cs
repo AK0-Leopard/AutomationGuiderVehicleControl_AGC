@@ -136,6 +136,7 @@ namespace com.mirle.ibg3k0.sc
         public event EventHandler<int> StatusRequestFailOverTimes;
         public event EventHandler CanNotFindTheCharger;
         public event EventHandler<VhStopSingle> ReservedStopStatusChange;
+        public event EventHandler<VehicleState> VehicleStateChange;
 
         public void onExcuteCommandStatusChange()
         {
@@ -210,6 +211,11 @@ namespace com.mirle.ibg3k0.sc
         public void onReservedStopStatusChange(VhStopSingle stopSingle)
         {
             ReservedStopStatusChange?.Invoke(this, stopSingle);
+        }
+
+        public void onVehicleStateChange(VehicleState vhState)
+        {
+            VehicleStateChange?.Invoke(this, vhState);
         }
 
         #endregion Event
@@ -1072,6 +1078,7 @@ namespace com.mirle.ibg3k0.sc
                            VehicleID: VEHICLE_ID,
                            CST_ID_L: CST_ID_L,
                            CST_ID_R: CST_ID_R);
+            Task.Run(() => onVehicleStateChange(transition.Destination));
         }
         void UnhandledTriggerHandler(VehicleState state, VehicleTrigger trigger)
         {

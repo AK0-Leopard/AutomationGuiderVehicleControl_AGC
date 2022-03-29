@@ -756,7 +756,7 @@ namespace com.mirle.ibg3k0.sc.Service
             {
                 scApp.VehicleBLL.setAndPublishPositionReportInfo2Redis(vh.VEHICLE_ID, receiveStr);
                 //scApp.ReportBLL.newReportRunTimetatus(vh.VEHICLE_ID);
-                Task.Run(() => ReportVhStatus(vh));
+                //Task.Run(() => ReportVhStatus(vh));
             }
             private void ReportVhStatus(AVEHICLE vh)
             {
@@ -2783,10 +2783,12 @@ namespace com.mirle.ibg3k0.sc.Service
                                     LogHelper.Log(logger: logger, LogLevel: LogLevel.Debug, Class: nameof(CMDBLL), Device: string.Empty,
                                     Data: $"Create HPR empty carrier command fail, loadunload cmd id:{SCUtility.Trim(cmd.ID)},vh id:{SCUtility.Trim(cmd.VH_ID)},from:{SCUtility.Trim(cmd.SOURCE)},to:{SCUtility.Trim(cmd.DESTINATION)}");
                                 }
-
                             }
                             #endregion hpr放空盒命令
-
+                            if (is_success)
+                            {
+                                assignVH.VehicleAssign();
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -3384,8 +3386,36 @@ namespace com.mirle.ibg3k0.sc.Service
                 vh.Idling += Vh_Idling;
                 vh.CurrentExcuteCmdChange += Vh_CurrentExcuteCmdChange;
                 vh.StatusRequestFailOverTimes += Vh_StatusRequestFailOverTimes;
-                vh.ReservedStopStatusChange += Vh_ReservedStopStatusChange; ;
+                vh.ReservedStopStatusChange += Vh_ReservedStopStatusChange;
+                vh.BatteryCapacityChange += Vh_BatteryCapacityChange;
+                vh.VehicleStateChange += Vh_VehicleStateChange;
                 vh.SetupTimerAction();
+            }
+        }
+
+        private void Vh_VehicleStateChange(object sender, AVEHICLE.VehicleState e)
+        {
+            AVEHICLE vh = sender as AVEHICLE;
+            try
+            {
+                scApp.ReportBLL.newReportRunTimetatus(vh.VEHICLE_ID);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Exception:");
+            }
+        }
+
+        private void Vh_BatteryCapacityChange(object sender, int e)
+        {
+            AVEHICLE vh = sender as AVEHICLE;
+            try
+            {
+                scApp.ReportBLL.newReportBettryValus(vh.VEHICLE_ID);
+            }
+            catch (Exception ex)
+            {
+                logger.Error(ex, "Exception:");
             }
         }
 
@@ -3402,7 +3432,7 @@ namespace com.mirle.ibg3k0.sc.Service
             }
             catch (Exception ex)
             {
-
+                logger.Error(ex, "Exception:");
             }
             finally
             {
