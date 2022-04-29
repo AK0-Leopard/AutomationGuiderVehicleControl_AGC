@@ -55,7 +55,8 @@ namespace com.mirle.ibg3k0.sc.Data.DAO
                                 Priority = stringToInt(c.Field<string>("PRIORITY")),
                                 TrafficControlSegment = c.Field<string>("TRAFFIC_CONTROL_SEGMENT"),
                                 ChargerID = c.Field<string>("CHARGER_ID"),
-                                CouplerNum = stringToInt(c.Field<string>("COUPLER_NUM"))
+                                CouplerNum = stringToInt(c.Field<string>("COUPLER_NUM")),
+                                SpecifyVhID = c.Field<string>("SPECIFY_VH_ID")
                             };
                 return query.SingleOrDefault();
             }

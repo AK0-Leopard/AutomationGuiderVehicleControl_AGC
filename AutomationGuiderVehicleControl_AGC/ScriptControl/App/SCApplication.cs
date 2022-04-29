@@ -1849,7 +1849,7 @@ namespace com.mirle.ibg3k0.sc.App
 
         public static Boolean isNeedCheckPortReady = true;
         public static Boolean isPassCouplerHPSafetySignal = false;
-        public static Boolean isPassCouplerStatus = false;
+        public static Boolean isPassCouplerStatus = true;
         public static Boolean isNeedCheckPortUpDateTime = true;
 
         public static int GuideSearchTimes = 0;

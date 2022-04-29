@@ -78,6 +78,12 @@ namespace com.mirle.ibg3k0.sc.BLL
                 CouplerAddresses = CouplerAddresses.Where(coupler => coupler.IsWork(unitBLL)).ToList();
                 return CouplerAddresses;
             }
+            public (bool isFind, CouplerAddress specifyCoupler) GetSpecifyCouplerAddress(string vhID)
+            {
+                List<CouplerAddress> CouplerAddresses = CommObjCacheManager.getCouplerAddresses();
+                CouplerAddress specify_coupler_addresses = CouplerAddresses.Where(adr => SCUtility.isMatche(adr.SpecifyVhID, vhID)).FirstOrDefault();
+                return (specify_coupler_addresses != null, specify_coupler_addresses);
+            }
 
             public bool IsCouplerWork(CouplerAddress couplerAddress, UnitBLL unitBLL)
             {

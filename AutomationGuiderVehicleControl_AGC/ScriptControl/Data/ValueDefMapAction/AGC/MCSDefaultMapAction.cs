@@ -905,7 +905,11 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AGC
         private (bool isSuccess, string result) doCheckMCSCommand(S2F49_TRANSFER s2F49_TRANSFER, ref S2F50 s2F50, out string check_result)
         {
             check_result = string.Empty;
-            string checkcode = SECSConst.HCACK_Confirm;
+            if (IsSpecifyVhToChrage(s2F49_TRANSFER))
+            {
+                return (true, SECSConst.HCACK_Confirm);
+            }
+
             bool isSuccess = true;
             List<S2F50.CP_U1> comminfo_check_result = new List<S2F50.CP_U1>();
             List<S2F50.CP_U1> traninfo_check_result = new List<S2F50.CP_U1>();
@@ -1056,6 +1060,24 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AGC
 
             return (true, SECSConst.HCACK_Confirm);
         }
+
+        private bool IsSpecifyVhToChrage(S2F49_TRANSFER s2F49_TRANSFER)
+        {
+            string source_port = s2F49_TRANSFER.REPITEMS.TRANINFO.TRANSFERINFOVALUE.SOUINFO.CPVAL;
+            string dest_port = s2F49_TRANSFER.REPITEMS.TRANINFO.TRANSFERINFOVALUE.DESTINFO.CPVAL;
+            if (SCUtility.isMatche(source_port, dest_port))
+            {
+                return false;
+            }
+            bool is_vh_source = scApp.VehicleBLL.cache.getVehicleByRealID(source_port) != null;
+            bool is_vh_dest = scApp.VehicleBLL.cache.getVehicleByRealID(dest_port) != null;
+            if (!is_vh_source || !is_vh_dest)
+            {
+                return false;
+            }
+            return true;
+        }
+
         private bool checkCommandID(List<S2F50.CP_U1> comminfo_check_result, string name, string value)
         {
             bool is_success = !SCUtility.isEmpty(value);

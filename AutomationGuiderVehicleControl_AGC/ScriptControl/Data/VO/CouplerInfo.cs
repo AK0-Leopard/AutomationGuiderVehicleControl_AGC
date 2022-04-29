@@ -13,6 +13,7 @@ namespace com.mirle.ibg3k0.sc.Data.VO
         public string TrafficControlSegment;
         public string ChargerID;
         public int CouplerNum;
+        public string  SpecifyVhID;
     }
 
 }

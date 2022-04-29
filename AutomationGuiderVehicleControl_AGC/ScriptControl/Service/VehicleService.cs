@@ -2455,9 +2455,9 @@ namespace com.mirle.ibg3k0.sc.Service
                 //return scApp.CMDBLL.doCreatCommand(vhID, cmd_type: E_CMD_TYPE.Move, destination: destination);
                 return (is_success, cmd_obj);
             }
-            public bool MoveToCharge(string vhID, string destination)
+            public bool MoveToCharge(string vhID, string destination, string mcsCmdID = "")
             {
-                bool is_success = scApp.CMDBLL.doCreatCommand(vhID, cmd_type: E_CMD_TYPE.Move_Charger, destination: destination);
+                bool is_success = scApp.CMDBLL.doCreatCommand(vhID, cmd_type: E_CMD_TYPE.Move_Charger, destination: destination, cmd_id_mcs: mcsCmdID);
                 if (is_success)
                     setPreExcuteTranCmdID(vhID, "");
                 return is_success;
@@ -2560,18 +2560,6 @@ namespace com.mirle.ibg3k0.sc.Service
                                    VehicleID: vh_id);
                             }
                             tryRemoveFinishTransferInCurrentCache(finish_fransfer_cmd_id);
-                            Task.Run(() => scApp.VehicleBLL.redis.setFinishTransferCommandID(vh.VEHICLE_ID, finish_fransfer_cmd_id));
-                            if (cmd.DESTINATION_PORT.StartsWith("HPR") && vh.isHPRVehicle && DebugParameter.isActiveHPRScenario)
-                            {
-                                if (completeStatus == CompleteStatus.Unload)//成功放空盒上去HPR要要求新空盒。
-                                {
-                                    is_success = is_success && scApp.ReportBLL.ReportEmptyFoupRequest(cmd.DESTINATION_PORT);
-                                }
-                                else if (completeStatus == CompleteStatus.VehicleAbort || completeStatus == CompleteStatus.InterlockError)//HPR命令失敗時要通知MCS補空盒上去
-                                {
-                                    is_success = is_success && scApp.ReportBLL.ReportEmptyFoupDepositFail(cmd.DESTINATION_PORT);
-                                }
-                            }
                         }
 
                     }

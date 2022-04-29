@@ -308,5 +308,6 @@ namespace com.mirle.ibg3k0.sc.Data.SECS.AGVC.AGC
             //    lot_id = lot_info[0].CPVAL;
             //return lot_id;
         }
+
     }
 }

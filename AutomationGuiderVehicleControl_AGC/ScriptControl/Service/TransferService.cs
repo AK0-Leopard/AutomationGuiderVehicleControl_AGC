@@ -89,7 +89,8 @@ namespace com.mirle.ibg3k0.sc.Service
                 var carrier_info = transfer.GetCarrierInfo(scApp.VehicleBLL);
                 var sys_excute_quality_info = transfer.GetSysExcuteQuality(scApp.VehicleBLL);
                 transferBLL.db.transfer.add(transfer);
-                if (transfer.TRANSFERSTATE == E_TRAN_STATUS.Queue)
+                if (!transfer.IsSpecifyVhToChrage(scApp.VehicleBLL) &&
+                     transfer.TRANSFERSTATE == E_TRAN_STATUS.Queue)
                 {
                     carrierBLL.db.addOrUpdate(carrier_info);
                     //sysExcuteQualityBLL.addSysExcuteQuality(sys_excute_quality_info);
@@ -1297,6 +1298,24 @@ namespace com.mirle.ibg3k0.sc.Service
 
                             foreach (VTRANSFER first_waitting_excute_mcs_cmd in in_queue_transfer)
                             {
+
+                                if (first_waitting_excute_mcs_cmd.IsSpecifyVhToChrage(scApp.VehicleBLL))
+                                {
+                                    var vh = scApp.VehicleBLL.cache.getVehicleByRealID(first_waitting_excute_mcs_cmd.HOSTSOURCE);
+                                    var try_get_specify_coupler_adr = scApp.AddressesBLL.cache.GetSpecifyCouplerAddress(vh.VEHICLE_ID);
+                                    if (try_get_specify_coupler_adr.isFind)
+                                    {
+                                        scApp.VehicleService.Command.MoveToCharge(vh.VEHICLE_ID, try_get_specify_coupler_adr.specifyCoupler.ADR_ID, first_waitting_excute_mcs_cmd.ID);
+                                    }
+                                    else
+                                    {
+                                        LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                                           Data: $"接收到Command ID:{first_waitting_excute_mcs_cmd.ID}，要求AGV:{ vh.VEHICLE_ID}前往充電站，但沒找到該AGV設定的充電位置",
+                                           VehicleID: vh.VEHICLE_ID);
+                                    }
+                                    continue;
+                                }
+
                                 string hostsource = first_waitting_excute_mcs_cmd.HOSTSOURCE;
                                 string hostdest = first_waitting_excute_mcs_cmd.HOSTDESTINATION;
                                 string from_adr = string.Empty;

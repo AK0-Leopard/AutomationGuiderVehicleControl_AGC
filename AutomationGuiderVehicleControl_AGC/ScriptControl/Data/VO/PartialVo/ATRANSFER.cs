@@ -161,6 +161,23 @@ namespace com.mirle.ibg3k0.sc
         {
             return Newtonsoft.Json.JsonConvert.SerializeObject(this);
         }
+
+        public bool IsSpecifyVhToChrage(BLL.VehicleBLL vehicleBLL)
+        {
+            string source_port = HOSTSOURCE;
+            string dest_port = HOSTDESTINATION;
+            if (SCUtility.isMatche(source_port, dest_port))
+            {
+                return false;
+            }
+            bool is_vh_source = vehicleBLL.cache.getVehicleByRealID(source_port) != null;
+            bool is_vh_dest = vehicleBLL.cache.getVehicleByRealID(dest_port) != null;
+            if (!is_vh_source || !is_vh_dest)
+            {
+                return false;
+            }
+            return true;
+        }
     }
 
 }

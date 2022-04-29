@@ -39,16 +39,8 @@ namespace com.mirle.ibg3k0.sc.Data.TimerAction
         {
             try
             {
-                //scApp.TransferService.Scan();
-                //scApp.TransferService.ScanByVTransfer_v2();
-                if (DebugParameter.isActiveHPRScenario)
-                {
-                    scApp.TransferService.ScanByVTransfer_v4();
-                }
-                else
-                {
-                    scApp.TransferService.ScanByVTransfer_v3();
-                }
+                scApp.TransferService.ScanByVTransfer();
+
             }
             catch (Exception ex)
             {
