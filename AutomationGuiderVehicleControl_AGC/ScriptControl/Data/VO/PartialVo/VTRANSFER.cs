@@ -61,7 +61,7 @@ namespace com.mirle.ibg3k0.sc
             E_CMD_TYPE cmd_type = E_CMD_TYPE.Load; //目的地為虛擬Port的命令要轉換為Load命令給AGV
 
             //string from_adr = source_port_station == null ? string.Empty : source_port_station.ADR_ID;
-            string from_adr =string.Empty ;
+            string from_adr = string.Empty;
             string to_adr = desc_port_station == null ? string.Empty : desc_port_station.ADR_ID;
             return new ACMD()
             {
@@ -128,6 +128,8 @@ namespace com.mirle.ibg3k0.sc
             if (eq == null) return null;
             return eq;
         }
+
+
         public string getSourcePortNodeID(BLL.PortStationBLL portStationBLL, BLL.EqptBLL eqptBLL)
         {
             var port_station = portStationBLL.OperateCatch.getPortStation(this.HOSTSOURCE);
@@ -144,25 +146,14 @@ namespace com.mirle.ibg3k0.sc
             return SCUtility.Trim(port_station.EQPT_ID, true);
         }
 
-        public string getSourcePortAdrID(BLL.PortStationBLL portStationBLL)
-        {
-            var port_station = portStationBLL.OperateCatch.getPortStation(this.HOSTSOURCE);
-            if (port_station == null) return "";
-            return SCUtility.Trim(port_station.ADR_ID, true);
-        }
-        public string getTragetPortAdrID(BLL.PortStationBLL portStationBLL)
-        {
-            var port_station = portStationBLL.OperateCatch.getPortStation(this.HOSTDESTINATION);
-            if (port_station == null) return "";
-            return SCUtility.Trim(port_station.ADR_ID, true);
-        }
-
         public AEQPT getTragetPortEQ(BLL.PortStationBLL portStationBLL, BLL.EqptBLL eqptBLL)
         {
             var port_station = portStationBLL.OperateCatch.getPortStation(this.HOSTDESTINATION);
             if (port_station == null) return null;
             return port_station.GetEqpt(eqptBLL);
         }
+
+
         public string getTragetPortNodeID(BLL.PortStationBLL portStationBLL, BLL.EqptBLL eqptBLL)
         {
             var port_station = portStationBLL.OperateCatch.getPortStation(this.HOSTDESTINATION);
@@ -225,6 +216,29 @@ namespace com.mirle.ibg3k0.sc
         public override string ToString()
         {
             return $"Command:{this.ID},source:{this.HOSTSOURCE},desc:{this.HOSTDESTINATION},inser time:{CMD_INSER_TIME.ToString()}";
+        }
+
+        public bool IsCrossZoneTransfer(BLL.PortStationBLL portStationBLL, BLL.ZoneBLL zoneBLL)
+        {
+            var source_zone = getSourcePortZone(portStationBLL, zoneBLL);
+            var target_zone = getTragetPortZone(portStationBLL, zoneBLL);
+            if (source_zone != target_zone)
+            {
+                return true;
+            }
+            return false;
+        }
+        private AZONE getSourcePortZone(BLL.PortStationBLL portStationBLL, BLL.ZoneBLL zoneBLL)
+        {
+            var port_station = portStationBLL.OperateCatch.getPortStation(this.HOSTSOURCE);
+            if (port_station == null) return null;
+            return port_station.GetZone(zoneBLL);
+        }
+        private AZONE getTragetPortZone(BLL.PortStationBLL portStationBLL, BLL.ZoneBLL zoneBLL)
+        {
+            var port_station = portStationBLL.OperateCatch.getPortStation(this.HOSTDESTINATION);
+            if (port_station == null) return null;
+            return port_station.GetZone(zoneBLL);
         }
 
     }

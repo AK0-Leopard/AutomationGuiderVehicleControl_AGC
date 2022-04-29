@@ -47,6 +47,10 @@ namespace com.mirle.ibg3k0.sc
         {
             return eqptBLL.OperateCatch.GetEqpt(EQPT_ID);
         }
+        public AZONE GetZone(ZoneBLL zoneBLL)
+        {
+            return zoneBLL.cache.GetZone(ZONE_ID);
+        }
         public SCAppConstants.EqptType GetEqptType(EqptBLL eqptBLL)
         {
             return eqptBLL.OperateCatch.GetEqptType(EQPT_ID);

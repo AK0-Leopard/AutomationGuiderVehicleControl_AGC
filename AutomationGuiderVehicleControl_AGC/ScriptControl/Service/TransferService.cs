@@ -1260,6 +1260,113 @@ namespace com.mirle.ibg3k0.sc.Service
             scApp.ReportBLL.newReportCarrierInstalled(location_of_vh.Real_ID, install_carrier.ID, install_carrier.LOCATION, null);
             return (true, $"process[{completeStatus}] success,remove carrier:{commandCarrierID} install:{install_carrier.ID}");
         }
+        public void ScanByVTransfer()
+        {
+            if (System.Threading.Interlocked.Exchange(ref syncTranCmdPoint, 1) == 0)
+            {
+                try
+                {
+                    if (scApp.getEQObjCacheManager().getLine().ServiceMode
+                        != SCAppConstants.AppServiceMode.Active)
+                        return;
+                    List<VTRANSFER> un_finish_trnasfer = scApp.TransferBLL.db.vTransfer.loadUnfinishedVTransfer();
+                    line.CurrentExcuteTransferCommand = un_finish_trnasfer;
+
+                    Task.Run(() => queueTimeOutCheck(un_finish_trnasfer));
+                    if (un_finish_trnasfer == null || un_finish_trnasfer.Count == 0) return;
+                    if (DebugParameter.CanAutoRandomGeneratesCommand ||
+                        (scApp.getEQObjCacheManager().getLine().SCStats == ALINE.TSCState.AUTO && scApp.getEQObjCacheManager().getLine().MCSCommandAutoAssign))
+                    {
+                        List<VTRANSFER> excuting_transfer = un_finish_trnasfer.
+                                                    Where(tr => tr.TRANSFERSTATE > E_TRAN_STATUS.Queue &&
+                                                                tr.TRANSFERSTATE <= E_TRAN_STATUS.Transferring &&
+                                                                !SCUtility.isEmpty(tr.VH_ID)).
+                                                    ToList();
+                        List<VTRANSFER> in_queue_transfer = un_finish_trnasfer.
+                                                    Where(tr => tr.TRANSFERSTATE == E_TRAN_STATUS.Queue).
+                                                    ToList();
+
+
+
+
+                        #region normal transfer
+
+
+                        try
+                        {
+
+                            foreach (VTRANSFER first_waitting_excute_mcs_cmd in in_queue_transfer)
+                            {
+                                string hostsource = first_waitting_excute_mcs_cmd.HOSTSOURCE;
+                                string hostdest = first_waitting_excute_mcs_cmd.HOSTDESTINATION;
+                                string from_adr = string.Empty;
+                                string to_adr = string.Empty;
+                                AVEHICLE bestSuitableVh = null;
+                                E_VH_TYPE vh_type = E_VH_TYPE.None;
+
+                                bool is_cross_tran_command = first_waitting_excute_mcs_cmd.IsCrossZoneTransfer(scApp.PortStationBLL, scApp.ZoneBLL);
+                                vh_type = is_cross_tran_command ? E_VH_TYPE.Type2 : E_VH_TYPE.Type1;
+                                //確認 source 是否為Port
+                                bool source_is_a_port = scApp.PortStationBLL.OperateCatch.IsExist(hostsource);
+                                if (source_is_a_port)
+                                {
+                                    bestSuitableVh = scApp.VehicleBLL.cache.findBestSuitableVhStepByStepFromAdr(scApp.GuideBLL, scApp.CMDBLL, from_adr, vh_type);
+                                }
+                                else
+                                {
+                                    bestSuitableVh = scApp.VehicleBLL.cache.getVehicleByLocationRealID(hostsource);
+                                    if (bestSuitableVh.IsError ||
+                                        bestSuitableVh.MODE_STATUS != VHModeStatus.AutoRemote)
+                                    {
+                                        LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                                           Data: $"Has transfer command:{SCUtility.Trim(first_waitting_excute_mcs_cmd.ID, true)} for vh:{bestSuitableVh.VEHICLE_ID}" +
+                                                 $"but it error happend or not auto remote.",
+                                           VehicleID: bestSuitableVh.VEHICLE_ID);
+                                        continue;
+                                    }
+                                }
+
+
+
+                                if (bestSuitableVh != null)
+                                {
+                                    if (AssignTransferCommmand(first_waitting_excute_mcs_cmd, bestSuitableVh))
+                                    {
+                                        scApp.VehicleService.Command.Scan();
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.Error(ex, "Exception");
+                        }
+
+
+                        foreach (VTRANSFER queue_tran in in_queue_transfer)
+                        {
+                            int AccumulateTime_minute = SystemParameter.TransferCommandTimePriorityIncrement;
+                            int current_time_priority = ((int)((DateTime.Now - queue_tran.CMD_INSER_TIME).TotalMinutes) * AccumulateTime_minute);
+                            if (current_time_priority > queue_tran.TIME_PRIORITY)
+                            {
+                                updateTranTimePriority(queue_tran, current_time_priority);
+                            }
+                        }
+                        #endregion normal transfer
+
+                    }
+                }
+                catch (Exception ex)
+                {
+                    logger.Error(ex, "Exception");
+                }
+                finally
+                {
+                    System.Threading.Interlocked.Exchange(ref syncTranCmdPoint, 0);
+                }
+            }
+        }
 
         public void ScanByVTransfer_v3()
         {
@@ -1284,7 +1391,7 @@ namespace com.mirle.ibg3k0.sc.Service
                                                                 !SCUtility.isEmpty(tr.VH_ID)).
                                                     ToList();
                         List<VTRANSFER> in_queue_transfer = un_finish_trnasfer.
-                                                    Where(tr => tr.TRANSFERSTATE == E_TRAN_STATUS.Queue ).
+                                                    Where(tr => tr.TRANSFERSTATE == E_TRAN_STATUS.Queue).
                                                     ToList();
 
 
@@ -1705,7 +1812,7 @@ namespace com.mirle.ibg3k0.sc.Service
                                                                  .OrderByDescending(tran => tran.PORT_PRIORITY)
                                                                  .ToList();
 
-                            if (traget_not_agv_st_hpr_queue_transfer != null&& traget_not_agv_st_hpr_queue_transfer.Count != 0)
+                            if (traget_not_agv_st_hpr_queue_transfer != null && traget_not_agv_st_hpr_queue_transfer.Count != 0)
                             {
                                 if (scApp.VehicleBLL.cache.isHPRVehicleAvalible(E_VH_TYPE.None))//檢查有沒有可運作的HPR專用車
                                 {

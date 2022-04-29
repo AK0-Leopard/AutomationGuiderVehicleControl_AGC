@@ -2732,59 +2732,6 @@ namespace com.mirle.ibg3k0.sc.Service
                                 //Finish(cmd.ID, CompleteStatus.VehicleAbort);
                                 CommandInitialFail(cmd);
                             }
-                            #region hpr放空盒命令
-                            else if (DebugParameter.isActiveHPRScenario && assignVH.isHPRVehicle && cmd.CMD_TYPE == E_CMD_TYPE.LoadUnload && cmd.SOURCE_PORT.StartsWith("HPR")) //HPR專用車下達到HPR取貨的LoadUnload命令以後，要補上一個放空盒的命令
-                            {
-                                string empty_cst_id = string.Empty;
-                                if (assignVH.HAS_CST_L)
-                                {
-                                    empty_cst_id = assignVH.CST_ID_L;
-                                }
-                                else if (assignVH.HAS_CST_R)
-                                {
-                                    empty_cst_id = assignVH.CST_ID_R;
-                                }
-                                if (!string.IsNullOrWhiteSpace(empty_cst_id))
-                                {
-
-                                    string commandID = scApp.SequenceBLL.getCommandID(SCAppConstants.GenOHxCCommandType.Manual);
-                                    ATRANSFER aTRANSFER = new ATRANSFER
-                                    {
-                                        CARRIER_ID = empty_cst_id,
-                                        ID = commandID,
-                                        COMMANDSTATE = 0,
-                                        HOSTSOURCE = scApp.HPREmptyCarrierVirtualPort,
-                                        HOSTDESTINATION = cmd.SOURCE_PORT,
-                                        PRIORITY = 5,
-                                        PAUSEFLAG = "0",
-                                        CMD_INSER_TIME = DateTime.Now,
-                                        TIME_PRIORITY = 0,
-                                        PORT_PRIORITY = 0,
-                                        PRIORITY_SUM = 5,
-                                        REPLACE = 0,
-                                        LOT_ID = "",
-                                        cst_type = "",
-                                        CHECKCODE = "4",
-                                        TRANSFERSTATE = 0
-                                    };
-                                    bool is_process_success = scApp.TransferService.Creat(aTRANSFER);
-                                    if (is_process_success)
-                                    {
-                                        scApp.ReportBLL.ReportdOperatorInitialAction(commandID, "Transfer", empty_cst_id, scApp.HPREmptyCarrierVirtualPort, cmd.SOURCE_PORT, "5");
-                                    }
-                                    else
-                                    {
-                                        scApp.ReportBLL.ReportEmptyFoupDepositFail(cmd.SOURCE_PORT);
-                                    }
-                                    //scApp.VehicleService.Command.Unload(assignVH.VEHICLE_ID, empty_cst_id, cmd.SOURCE, cmd.SOURCE_PORT);
-                                }
-                                else
-                                {
-                                    LogHelper.Log(logger: logger, LogLevel: LogLevel.Debug, Class: nameof(CMDBLL), Device: string.Empty,
-                                    Data: $"Create HPR empty carrier command fail, loadunload cmd id:{SCUtility.Trim(cmd.ID)},vh id:{SCUtility.Trim(cmd.VH_ID)},from:{SCUtility.Trim(cmd.SOURCE)},to:{SCUtility.Trim(cmd.DESTINATION)}");
-                                }
-                            }
-                            #endregion hpr放空盒命令
                             if (is_success)
                             {
                                 assignVH.VehicleAssign();

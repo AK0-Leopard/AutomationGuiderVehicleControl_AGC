@@ -970,13 +970,13 @@ namespace com.mirle.ibg3k0.sc.BLL
                     FirstOrDefault();
                 return vh;
             }
-            public bool isHPRVehicleAvalible( E_VH_TYPE vh_type)
+            public bool isHPRVehicleAvalible(E_VH_TYPE vh_type)
             {
 
                 List<AVEHICLE> vhs = eqObjCacheManager.getAllVehicle().ToList();
                 //1.過濾掉狀態不符的
                 filterCanNotExcuteTranHPRVh(ref vhs, vh_type);
-                return vhs.Count>0;
+                return vhs.Count > 0;
             }
 
             public AVEHICLE findBestSuitableVhStepByStepFromAdr(GuideBLL GuideBLL, CMDBLL cmdBLL, string source, E_VH_TYPE vh_type,
@@ -988,31 +988,7 @@ namespace com.mirle.ibg3k0.sc.BLL
                 List<AVEHICLE> vhs = eqObjCacheManager.getAllVehicle().ToList();
                 //1.過濾掉狀態不符的
                 filterCanNotExcuteTranVh(ref vhs, cmdBLL, vh_type);
-
-                if (DebugParameter.isActiveHPRScenario)
-                {
-                    if (isHPRCommand == false)
-                    {
-                        filterHPRVh(ref vhs);
-                    }
-                    else
-                    {
-                        filterNonHPRVh(ref vhs);
-                        filterCommandingVh(ref vhs);
-                        if (hasEmptyCST)
-                        {
-                            filterNoEmptyCSTVh(ref vhs);
-                        }
-                        else
-                        {
-                            filterHasCSTVh(ref vhs);
-                        }
-                    }
-                }
-                else
-                {
-                    filterCommandingVh(ref vhs);
-                }
+                filterCommandingVh(ref vhs);
 
 
                 //2.尋找距離Source最近的車子
