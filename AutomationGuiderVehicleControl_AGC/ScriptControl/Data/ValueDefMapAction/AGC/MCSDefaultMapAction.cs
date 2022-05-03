@@ -1065,12 +1065,23 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AGC
         {
             string source_port = s2F49_TRANSFER.REPITEMS.TRANINFO.TRANSFERINFOVALUE.SOUINFO.CPVAL;
             string dest_port = s2F49_TRANSFER.REPITEMS.TRANINFO.TRANSFERINFOVALUE.DESTINFO.CPVAL;
-            if (SCUtility.isMatche(source_port, dest_port))
+            if (!SCUtility.isMatche(source_port, dest_port))
             {
                 return false;
             }
-            bool is_vh_source = scApp.VehicleBLL.cache.getVehicleByRealID(source_port) != null;
-            bool is_vh_dest = scApp.VehicleBLL.cache.getVehicleByRealID(dest_port) != null;
+            if (source_port.Length < 2)
+            {
+                return false;
+            }
+            if (dest_port.Length < 2)
+            {
+                return false;
+            }
+            string sub_source_port_id = source_port.Substring(source_port.Length - 2, 2);
+            string sub_dest_port_id = dest_port.Substring(source_port.Length - 2, 2);
+
+            bool is_vh_source = scApp.VehicleBLL.cache.getVehicleByRealID(sub_source_port_id) != null;
+            bool is_vh_dest = scApp.VehicleBLL.cache.getVehicleByRealID(sub_dest_port_id) != null;
             if (!is_vh_source || !is_vh_dest)
             {
                 return false;

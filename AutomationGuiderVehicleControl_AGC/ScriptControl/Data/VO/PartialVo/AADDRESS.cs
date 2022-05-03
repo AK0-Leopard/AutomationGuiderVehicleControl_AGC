@@ -221,7 +221,6 @@ namespace com.mirle.ibg3k0.sc
 
             return result;
         }
-        public string SpecifyVhID { get; set; }
     }
 
     public class ReserveEnhanceAddress : AADDRESS, IReserveEnhance
@@ -272,7 +271,6 @@ namespace com.mirle.ibg3k0.sc
 
         public string[] EnhanceControlAddress { get; set; }
         public List<Data.VO.ReserveEnhanceInfo> infos { get; set; }
-        public string SpecifyVhID { get; set; }
     }
 
     public enum CouplerNum
@@ -292,7 +290,6 @@ namespace com.mirle.ibg3k0.sc
         bool hasVh(VehicleBLL vehicleBLL);
         bool hasVhGoing(VehicleBLL vehicleBLL);
         bool IsWork(UnitBLL unitBLL);
-        string SpecifyVhID { get; set; }
 
     }
 

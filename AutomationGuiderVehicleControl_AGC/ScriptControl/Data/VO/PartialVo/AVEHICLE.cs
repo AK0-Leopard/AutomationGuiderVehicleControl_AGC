@@ -1062,6 +1062,8 @@ namespace com.mirle.ibg3k0.sc
         [JsonIgnore]
         [BaseElement(NonChangeFromOtherVO = true)]
         public override string Real_ID { get; set; }
+        public string StandByAdr { get; set; }
+        public string ChargeAdr { get; set; }
 
 
 

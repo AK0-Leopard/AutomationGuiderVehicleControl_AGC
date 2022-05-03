@@ -3201,15 +3201,15 @@ namespace com.mirle.ibg3k0.sc.Service
                                 //    continue;
                                 //}
 
-                                //if (!orther_end_address.canAvoidVhecle)
+                                if (!orther_end_address.CanAvoid)
                                 //if (!orther_end_address.canAvoidVehicle(scApp.SectionBLL))
-                                //{
-                                //    LogHelper.Log(logger: logger, LogLevel: LogLevel.Debug, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
-                                //       Data: $"sec id:{SCUtility.Trim(sec.SEC_ID)} of orther end point:{orther_end_point} is not can avoid address, continue find next address{orther_end_point}",
-                                //       VehicleID: willPassVh.VEHICLE_ID);
-                                //    next_search_address_temp.Add((orther_end_point, sec));
-                                //    continue;
-                                //}
+                                {
+                                    LogHelper.Log(logger: logger, LogLevel: LogLevel.Debug, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                                       Data: $"sec id:{SCUtility.Trim(sec.SEC_ID)} of orther end point:{orther_end_point} is not can avoid address, continue find next address{orther_end_point}",
+                                       VehicleID: willPassVh.VEHICLE_ID);
+                                    next_search_address_temp.Add((orther_end_point, sec));
+                                    continue;
+                                }
                                 //找到以後嘗試去預約看看，確保該路徑是否還會干涉到該台VH
                                 //還是有干涉到的話就繼續往下找
 
@@ -4313,14 +4313,7 @@ namespace com.mirle.ibg3k0.sc.Service
                 bool has_cmd_excute = scApp.CMDBLL.cache.hasCmdExcute(vh.VEHICLE_ID);
                 if (!has_cmd_excute)
                 {
-                    if (vh.isHPRVehicle && DebugParameter.isActiveHPRScenario)
-                    {
-                        askVhToParkForWait(vh);
-                    }
-                    else
-                    {
-                        scApp.VehicleChargerModule.askVhToChargerForWait(vh);
-                    }
+                    Command.Move(vh.VEHICLE_ID, vh.StandByAdr);
                 }
 
             }

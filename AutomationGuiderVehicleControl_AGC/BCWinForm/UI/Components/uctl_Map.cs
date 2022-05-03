@@ -246,7 +246,7 @@ namespace com.mirle.ibg3k0.bc.winform.UI.Components
             double space_Height_PixelsWidth = BCUtility.RealLengthToPixelsWidthByScale(space_Width_m);
             pnl_Map.Height = (int)space_Height_PixelsHeight;
             pnl_Map.Width = (int)space_Height_PixelsWidth;
-            
+
             this.pnl_Map.Resize += new System.EventHandler(this.pnl_Map_Resize);
             pnl_Map.Tag = pnl_Map.Height + "|" + pnl_Map.Width;
 
@@ -437,7 +437,8 @@ namespace com.mirle.ibg3k0.bc.winform.UI.Components
                     pic_CstIcon_l.Image = Resources.Action__Cassette_;
 
                     m_objItemNewVhcl[ii] = new uctlNewVehicle(lstEq[ii], this, pic_AlarmStatus, pic_CstIcon_r, pic_CstIcon_l);
-                    int num = ii + 1;
+                    //int num = ii + 1;
+                    int num = tryGetVehicleNumByVhID(lstEq[ii].VEHICLE_ID, (ii + 1));
                     m_objItemNewVhcl[ii].Num = num;
                     m_objItemNewVhcl[ii].PrcSetLocation((uctlNewVehicle.UNKNOW_DEFAULT_X_LOCATION_VALUE * num) + 2, uctlNewVehicle.UNKNOW_DEFAULT_Y_LOCATION_VALUE);
                     //m_objItemNewVhcl[ii].p_SizeW = m_objItemVhcl[ii].Width;
@@ -464,6 +465,20 @@ namespace com.mirle.ibg3k0.bc.winform.UI.Components
             }
 
             return (bRet);
+        }
+        private int tryGetVehicleNumByVhID(string vhID, int originalNum)
+        {
+            if (vhID.Length < 2)
+                return originalNum;
+            string sub_vh_id = vhID.Substring(vhID.Length - 2, 2);
+            if (int.TryParse(sub_vh_id, out int result))
+            {
+                return result;
+            }
+            else
+            {
+                return originalNum;
+            }
         }
 
         private void adjustTheLayerOrder()

@@ -156,7 +156,6 @@ namespace com.mirle.ibg3k0.sc.Common
             (couplerAddress as ICpuplerType).TrafficControlSegment = coupler_info.TrafficControlSegment.Split('-');
             //if (!SCUtility.isMatche(couplerAddress.ADR_ID, "24002"))
             (couplerAddress as ICpuplerType).IsEnable = true;
-            (couplerAddress as ICpuplerType).SpecifyVhID = coupler_info.SpecifyVhID;
         }
 
         public List<ASEGMENT> getFireDoorSegment(string fireDoorID)

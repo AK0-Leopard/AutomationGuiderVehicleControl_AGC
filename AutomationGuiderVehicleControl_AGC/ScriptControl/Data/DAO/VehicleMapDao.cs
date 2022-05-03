@@ -54,7 +54,9 @@ namespace com.mirle.ibg3k0.sc.Data.DAO
                                 ID = c.Field<string>("ID"),
                                 REAL_ID = c.Field<string>("REAL_ID"),
                                 LOCATION_ID_R = c.Field<string>("LOCATION_ID_R"),
-                                LOCATION_ID_L = c.Field<string>("LOCATION_ID_L")
+                                LOCATION_ID_L = c.Field<string>("LOCATION_ID_L"),
+                                STAND_BY_ADR = c.Field<string>("STAND_BY_ADR"),
+                                CHARGE_ADR = c.Field<string>("CHARGE_ADR")
                             };
                 return query.SingleOrDefault();
             }

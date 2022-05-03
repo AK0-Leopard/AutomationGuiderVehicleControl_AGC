@@ -511,6 +511,8 @@ namespace com.mirle.ibg3k0.sc.Common
                         string real_id = vehicle_map_info.real_id;
                         string location_id_r = vehicle_map_info.location_id_r;
                         string location_id_l = vehicle_map_info.location_id_l;
+                        string stan_by_adr = vehicle_map_info.stand_by_adr;
+                        string chagre_adr = vehicle_map_info.charge_adr;
                         AVEHICLE vhTemp = new AVEHICLE()
                         {
                             VEHICLE_ID = vh_id,
@@ -518,7 +520,9 @@ namespace com.mirle.ibg3k0.sc.Common
                             TcpIpAgentName = vehicleConfig.TcpIpAgentName,
                             CUR_ADR_ID = "",
                             CUR_SEC_ID = "",
-                            NODE_ID = node_id
+                            NODE_ID = node_id,
+                            StandByAdr = stan_by_adr,
+                            ChargeAdr = chagre_adr
                         };
                         vhTemp.setCarrierLocationInfo(location_id_r, location_id_l);
                         vhList.Add(vhTemp);
@@ -545,20 +549,24 @@ namespace com.mirle.ibg3k0.sc.Common
             return zone_info;
         }
 
-        private (string real_id, string location_id_r, string location_id_l) getVhRealID(string vhID)
+        private (string real_id, string location_id_r, string location_id_l, string stand_by_adr, string charge_adr) getVhRealID(string vhID)
         {
             var map = scApp.VehicleMapDao.getVehicleMap(vhID);
             //var map = VEHICLEMAPs.Where(id => id.ID.Trim() == vhID.Trim()).SingleOrDefault();
             string real_id = "";
             string location_id_r = "";
             string location_id_l = "";
+            string strnd_by_adr = "";
+            string charge_adr = "";
             if (map != null)
             {
                 real_id = map.REAL_ID;
                 location_id_r = map.LOCATION_ID_R;
                 location_id_l = map.LOCATION_ID_L;
+                strnd_by_adr = map.STAND_BY_ADR;
+                charge_adr = map.CHARGE_ADR;
             }
-            return (real_id, location_id_r, location_id_l);
+            return (real_id, location_id_r, location_id_l, strnd_by_adr, charge_adr);
         }
 
         /// <summary>

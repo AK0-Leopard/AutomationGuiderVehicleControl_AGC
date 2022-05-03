@@ -1298,14 +1298,35 @@ namespace com.mirle.ibg3k0.sc.Service
 
                             foreach (VTRANSFER first_waitting_excute_mcs_cmd in in_queue_transfer)
                             {
-
-                                if (first_waitting_excute_mcs_cmd.IsSpecifyVhToChrage(scApp.VehicleBLL))
+                                var check_is_specify_vh_to_charge_command = first_waitting_excute_mcs_cmd.CheckIsSpecifyVhToChrage(scApp.VehicleBLL);
+                                if (check_is_specify_vh_to_charge_command.isSpecify)
                                 {
-                                    var vh = scApp.VehicleBLL.cache.getVehicleByRealID(first_waitting_excute_mcs_cmd.HOSTSOURCE);
-                                    var try_get_specify_coupler_adr = scApp.AddressesBLL.cache.GetSpecifyCouplerAddress(vh.VEHICLE_ID);
-                                    if (try_get_specify_coupler_adr.isFind)
+                                    var vh = scApp.VehicleBLL.cache.getVehicleByRealID(check_is_specify_vh_to_charge_command.vhID);
+                                    if (hasSetChargeAdr(vh))
                                     {
-                                        scApp.VehicleService.Command.MoveToCharge(vh.VEHICLE_ID, try_get_specify_coupler_adr.specifyCoupler.ADR_ID, first_waitting_excute_mcs_cmd.ID);
+                                        bool is_success = true;
+                                        using (TransactionScope tx = SCUtility.getTransactionScope())
+                                        {
+                                            using (DBConnection_EF con = DBConnection_EF.GetUContext())
+                                            {
+                                                is_success = is_success && scApp.VehicleService.Command.MoveToCharge(vh.VEHICLE_ID, vh.ChargeAdr, first_waitting_excute_mcs_cmd.ID);
+                                                is_success = is_success && scApp.CMDBLL.updateTransferCmd_TranStatus2PreInitial(first_waitting_excute_mcs_cmd.ID);
+                                                if (is_success)
+                                                {
+                                                    tx.Complete();
+                                                }
+                                                else
+                                                {
+                                                    CMDBLL.CommandCheckResult check_result = CMDBLL.getOrSetCallContext<CMDBLL.CommandCheckResult>(CMDBLL.CALL_CONTEXT_KEY_WORD_OHTC_CMD_CHECK_RESULT);
+                                                    check_result.Result.AppendLine($" vh:{vh.VEHICLE_ID} creat command to db unsuccess.");
+                                                    LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(TransferService), Device: DEVICE_NAME_AGV,
+                                                       Data: $"Assign transfer command fail.transfer id:{first_waitting_excute_mcs_cmd.ID}",
+                                                       Details: check_result.ToString(),
+                                                       XID: check_result.Num);
+                                                }
+                                            }
+                                        }
+
                                     }
                                     else
                                     {
@@ -1323,10 +1344,27 @@ namespace com.mirle.ibg3k0.sc.Service
                                 AVEHICLE bestSuitableVh = null;
                                 E_VH_TYPE vh_type = E_VH_TYPE.None;
 
+                                bool source_is_a_port = false;
                                 bool is_cross_tran_command = first_waitting_excute_mcs_cmd.IsCrossZoneTransfer(scApp.PortStationBLL, scApp.ZoneBLL);
+                                if (is_cross_tran_command)
+                                {
+                                    vh_type = E_VH_TYPE.Type2;
+                                }
+                                else
+                                {
+                                    var try_get_portstation = scApp.PortStationBLL.OperateCatch.tryGetPortStationVhType(hostsource);
+                                    if (try_get_portstation.isExist)
+                                    {
+                                        source_is_a_port = true;
+                                        vh_type = try_get_portstation.vhType;
+                                    }
+                                    else
+                                    {
+                                        source_is_a_port = false;
+                                    }
+                                }
                                 vh_type = is_cross_tran_command ? E_VH_TYPE.Type2 : E_VH_TYPE.Type1;
                                 //確認 source 是否為Port
-                                bool source_is_a_port = scApp.PortStationBLL.OperateCatch.IsExist(hostsource);
                                 if (source_is_a_port)
                                 {
                                     bestSuitableVh = scApp.VehicleBLL.cache.findBestSuitableVhStepByStepFromAdr(scApp.GuideBLL, scApp.CMDBLL, from_adr, vh_type);
@@ -1385,6 +1423,19 @@ namespace com.mirle.ibg3k0.sc.Service
                     System.Threading.Interlocked.Exchange(ref syncTranCmdPoint, 0);
                 }
             }
+        }
+        private bool hasSetChargeAdr(AVEHICLE vh)
+        {
+            if (SCUtility.isEmpty(vh.ChargeAdr))
+            {
+                return false;
+            }
+            var address = scApp.AddressesBLL.cache.GetAddress(vh.ChargeAdr);
+            if (address == null)
+            {
+                return false;
+            }
+            return true;
         }
 
         public void ScanByVTransfer_v3()
