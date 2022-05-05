@@ -233,10 +233,12 @@ namespace com.mirle.ibg3k0.sc
         {
             vehicleTimer.stop();
         }
-        public bool IsOnCharge(BLL.AddressesBLL addressesBLL)
+        public bool IsOnCharge
         {
-            var address_obj = addressesBLL.cache.GetAddress(CUR_ADR_ID);
-            return address_obj is CouplerAddress;
+            get
+            {
+                return SCUtility.isMatche(CUR_ADR_ID, ChargeAdr);
+            }
         }
         public bool IsNeedToLongCharge()
         {

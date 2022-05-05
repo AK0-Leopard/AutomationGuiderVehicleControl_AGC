@@ -213,6 +213,13 @@ namespace com.mirle.ibg3k0.sc
                 return COMMANDSTATE == ATRANSFER.COMMAND_STATUS_BIT_INDEX_UNLOADING;
             }
         }
+        public bool IsOnVh(BLL.VehicleBLL vehicleBLL)
+        {
+            var vh_obj = vehicleBLL.cache.getVehicleByRealID(SCUtility.Trim(HOSTSOURCE, true));
+            return vh_obj != null;
+        }
+
+
         public override string ToString()
         {
             return $"Command:{this.ID},source:{this.HOSTSOURCE},desc:{this.HOSTDESTINATION},inser time:{CMD_INSER_TIME.ToString()}";

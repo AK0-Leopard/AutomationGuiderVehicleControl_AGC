@@ -2947,13 +2947,7 @@ namespace com.mirle.ibg3k0.sc.Service
                 //if (reservedVh.ACT_STATUS == VHActionStatus.NoCommand &&
                 //    reservedVh.IsOnCharge(scApp.AddressesBLL) &&
                 //    reservedVh.IsNeedToLongCharge())
-                if (reservedVh.ACT_STATUS == VHActionStatus.NoCommand &&
-                    reservedVh.IsOnCharge(scApp.AddressesBLL) &&
-                    reservedVh.IsLowBattery())
-                {
-                    return (false, CAN_NOT_AVOID_RESULT.VehicleInLongCharge);
-                }
-                else if (reservedVh.IsError)
+                if (reservedVh.IsError)
                 {
                     return (false, CAN_NOT_AVOID_RESULT.VehicleInError);
                 }
@@ -4310,6 +4304,15 @@ namespace com.mirle.ibg3k0.sc.Service
             {
                 AVEHICLE vh = sender as AVEHICLE;
                 if (vh == null) return;
+                if(vh.IsOnCharge)
+                {
+                    LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                       Data: $"vh:{vh.VEHICLE_ID} 位於換電區:{vh.CUR_ADR_ID}，因此不進行Idling的待命區呼叫流程",
+                       VehicleID: vh.VEHICLE_ID,
+                       CST_ID_L: vh.CST_ID_L,
+                       CST_ID_R: vh.CST_ID_R);
+                    return;
+                }
                 bool has_cmd_excute = scApp.CMDBLL.cache.hasCmdExcute(vh.VEHICLE_ID);
                 if (!has_cmd_excute)
                 {

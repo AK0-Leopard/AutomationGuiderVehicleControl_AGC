@@ -1344,32 +1344,7 @@ namespace com.mirle.ibg3k0.sc.Service
                                 AVEHICLE bestSuitableVh = null;
                                 E_VH_TYPE vh_type = E_VH_TYPE.None;
 
-                                bool source_is_a_port = false;
-                                bool is_cross_tran_command = first_waitting_excute_mcs_cmd.IsCrossZoneTransfer(scApp.PortStationBLL, scApp.ZoneBLL);
-                                if (is_cross_tran_command)
-                                {
-                                    vh_type = E_VH_TYPE.Type2;
-                                }
-                                else
-                                {
-                                    var try_get_portstation = scApp.PortStationBLL.OperateCatch.tryGetPortStationVhType(hostsource);
-                                    if (try_get_portstation.isExist)
-                                    {
-                                        source_is_a_port = true;
-                                        vh_type = try_get_portstation.vhType;
-                                    }
-                                    else
-                                    {
-                                        source_is_a_port = false;
-                                    }
-                                }
-                                vh_type = is_cross_tran_command ? E_VH_TYPE.Type2 : E_VH_TYPE.Type1;
-                                //確認 source 是否為Port
-                                if (source_is_a_port)
-                                {
-                                    bestSuitableVh = scApp.VehicleBLL.cache.findBestSuitableVhStepByStepFromAdr(scApp.GuideBLL, scApp.CMDBLL, from_adr, vh_type);
-                                }
-                                else
+                                if (first_waitting_excute_mcs_cmd.IsOnVh(scApp.VehicleBLL))
                                 {
                                     bestSuitableVh = scApp.VehicleBLL.cache.getVehicleByLocationRealID(hostsource);
                                     if (bestSuitableVh.IsError ||
@@ -1382,6 +1357,66 @@ namespace com.mirle.ibg3k0.sc.Service
                                         continue;
                                     }
                                 }
+                                else
+                                {
+                                    bool is_cross_tran_command = first_waitting_excute_mcs_cmd.IsCrossZoneTransfer(scApp.PortStationBLL, scApp.ZoneBLL);
+                                    if (is_cross_tran_command)
+                                    {
+                                        vh_type = E_VH_TYPE.Type2;
+                                    }
+                                    else
+                                    {
+                                        var try_get_portstation = scApp.PortStationBLL.OperateCatch.tryGetPortStationVhType(hostsource);
+                                        if (try_get_portstation.isExist)
+                                        {
+                                            vh_type = try_get_portstation.vhType;
+                                        }
+                                        else
+                                        {
+                                            LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                                               Data: $"嘗試取得Port station:{hostsource}的物件失敗，無法派送搬送命令ID:{first_waitting_excute_mcs_cmd.ID}.");
+                                            continue;
+                                        }
+                                    }
+                                    bestSuitableVh = scApp.VehicleBLL.cache.findBestSuitableVhStepByStepFromAdr(scApp.GuideBLL, scApp.CMDBLL, from_adr, vh_type);
+                                }
+                                //bool source_is_a_port = false;
+                                //bool is_cross_tran_command = first_waitting_excute_mcs_cmd.IsCrossZoneTransfer(scApp.PortStationBLL, scApp.ZoneBLL);
+                                //if (is_cross_tran_command)
+                                //{
+                                //    vh_type = E_VH_TYPE.Type2;
+                                //}
+                                //else
+                                //{
+                                //    var try_get_portstation = scApp.PortStationBLL.OperateCatch.tryGetPortStationVhType(hostsource);
+                                //    if (try_get_portstation.isExist)
+                                //    {
+                                //        source_is_a_port = true;
+                                //        vh_type = try_get_portstation.vhType;
+                                //    }
+                                //    else
+                                //    {
+                                //        source_is_a_port = false;
+                                //    }
+                                //}
+                                ////確認 source 是否為Port
+                                //if (source_is_a_port)
+                                //{
+                                //    bestSuitableVh = scApp.VehicleBLL.cache.findBestSuitableVhStepByStepFromAdr(scApp.GuideBLL, scApp.CMDBLL, from_adr, vh_type);
+                                //}
+                                //else
+                                //{
+                                //    bestSuitableVh = scApp.VehicleBLL.cache.getVehicleByLocationRealID(hostsource);
+                                //    if (bestSuitableVh.IsError ||
+                                //        bestSuitableVh.MODE_STATUS != VHModeStatus.AutoRemote)
+                                //    {
+                                //        LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                                //           Data: $"Has transfer command:{SCUtility.Trim(first_waitting_excute_mcs_cmd.ID, true)} for vh:{bestSuitableVh.VEHICLE_ID}" +
+                                //                 $"but it error happend or not auto remote.",
+                                //           VehicleID: bestSuitableVh.VEHICLE_ID);
+                                //        continue;
+                                //    }
+                                //}
 
 
 

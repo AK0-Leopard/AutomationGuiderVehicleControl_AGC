@@ -74,7 +74,7 @@ namespace com.mirle.ibg3k0.sc.Data.TimerAction
             {
                 try
                 {
-                    scApp.VehicleChargerModule.CouplerTimingCheck();
+                    //scApp.VehicleChargerModule.CouplerTimingCheck();
                 }
                 catch (Exception ex)
                 {

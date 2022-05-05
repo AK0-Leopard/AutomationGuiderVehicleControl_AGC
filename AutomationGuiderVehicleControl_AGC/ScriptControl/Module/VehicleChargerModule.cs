@@ -43,20 +43,20 @@ namespace com.mirle.ibg3k0.sc.Module
             commObjCacheManager = app.getCommObjCacheManager();
             lineService = app.LineService;
 
-            var vhs = app.getEQObjCacheManager().getAllVehicle();
-            foreach (AVEHICLE vh in vhs)
-            {
-                vh.CommandComplete += Vh_CommandComplete;
-                vh.BatteryLevelChange += Vh_BatteryLevelChange;
-            }
+            //var vhs = app.getEQObjCacheManager().getAllVehicle();
+            //foreach (AVEHICLE vh in vhs)
+            //{
+            //    vh.CommandComplete += Vh_CommandComplete;
+            //    vh.BatteryLevelChange += Vh_BatteryLevelChange;
+            //}
 
-            //註冊各個Coupler的Status變化，在有其中一個有變化的時候要通知AGV目前所有coupler的狀態
-            List<AUNIT> chargers = unitBLL.OperateCatch.loadUnits();
-            foreach (AUNIT charger in chargers)
-            {
-                charger.CouplerStatusChanged += Charger_CouplerStatusChanged;
-                charger.CouplerHPSafetyChaged += Charger_CouplerHPSafetyChaged;
-            }
+            ////註冊各個Coupler的Status變化，在有其中一個有變化的時候要通知AGV目前所有coupler的狀態
+            //List<AUNIT> chargers = unitBLL.OperateCatch.loadUnits();
+            //foreach (AUNIT charger in chargers)
+            //{
+            //    charger.CouplerStatusChanged += Charger_CouplerStatusChanged;
+            //    charger.CouplerHPSafetyChaged += Charger_CouplerHPSafetyChaged;
+            //}
         }
 
         private void Charger_CouplerHPSafetyChaged(object sender, SCAppConstants.CouplerHPSafety e)
