@@ -295,12 +295,12 @@ namespace com.mirle.ibg3k0.sc.BLL
                 APORTSTATION port_station = CacheManager.getPortStation(portID);
                 return port_station != null;
             }
-            public (bool isExist, E_VH_TYPE vhType) tryGetPortStationVhType(string portID)
+            public (bool isExist , APORTSTATION portStation) tryGetPortStationVhType(string portID)
             {
                 APORTSTATION port_station = CacheManager.getPortStation(portID);
                 if (port_station == null)
-                    return (false, E_VH_TYPE.None);
-                return (true, port_station.LD_VH_TYPE);
+                    return (false, null);
+                return (true, port_station);
             }
             public bool IsEqPort(EqptBLL eqptBLL, string portID)
             {

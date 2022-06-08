@@ -59,6 +59,23 @@ namespace com.mirle.ibg3k0.sc.Data.DAO
                         select cmd;
             return query.SingleOrDefault();
         }
+        public int getVTransferAllCount(DBConnection_EF con)
+        {
+            var query = from cmd in con.VTRANSFER.AsNoTracking()
+                        where cmd.TRANSFERSTATE >= E_TRAN_STATUS.Queue && cmd.TRANSFERSTATE <= E_TRAN_STATUS.Aborting
+                        && cmd.CHECKCODE.Trim() == SECSConst.HCACK_Confirm
+                        select cmd;
+            return query.Count();
+        }
+        public int getVTransferCountByPortID(DBConnection_EF con, string portID)
+        {
+            var query = from cmd in con.VTRANSFER.AsNoTracking()
+                        where cmd.TRANSFERSTATE >= E_TRAN_STATUS.Queue && cmd.TRANSFERSTATE <= E_TRAN_STATUS.Aborting
+                        && cmd.CHECKCODE.Trim() == SECSConst.HCACK_Confirm
+                        && (cmd.HOSTSOURCE == portID.Trim() || cmd.HOSTDESTINATION == portID.Trim())
+                        select cmd;
+            return query.Count();
+        }
 
     }
 }

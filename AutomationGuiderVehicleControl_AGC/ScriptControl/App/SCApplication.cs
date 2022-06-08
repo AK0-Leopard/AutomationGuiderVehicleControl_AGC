@@ -1792,7 +1792,7 @@ namespace com.mirle.ibg3k0.sc.App
         public enum CycleRunTestType
         {
             Normal,
-            IgnorePortStatus,
+            PortTrans,
             OnlyMove,
             MoveBySelectPort
         }

@@ -516,6 +516,14 @@ namespace com.mirle.ibg3k0.sc.Service
                 }
                 return (is_success, result);
             }
+
+            public void testAvoid()
+            {
+                GuideInfo guideInfo = new GuideInfo();
+                guideInfo.GuideSections.AddRange(new string[] { "10501", "10601" });
+                guideInfo.GuideAddresses.AddRange(new string[] { "10006", "10007" , "10008" });
+                var result = guideInfo.converToGuideData(scApp.ReserveBLL);
+            }
             private bool sendMessage_ID_51_AVOID_REQUEST(string vh_id, string avoidAddress, string[] guideSection, string[] guideAddresses)
             {
                 bool isSuccess = false;
@@ -4308,6 +4316,15 @@ namespace com.mirle.ibg3k0.sc.Service
                 {
                     LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
                        Data: $"vh:{vh.VEHICLE_ID} 位於換電區:{vh.CUR_ADR_ID}，因此不進行Idling的待命區呼叫流程",
+                       VehicleID: vh.VEHICLE_ID,
+                       CST_ID_L: vh.CST_ID_L,
+                       CST_ID_R: vh.CST_ID_R);
+                    return;
+                }
+                if(vh.IsOnStandByAdr)
+                {
+                    LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                       Data: $"vh:{vh.VEHICLE_ID} 已經於Stand By Adr，不再進行派送",
                        VehicleID: vh.VEHICLE_ID,
                        CST_ID_L: vh.CST_ID_L,
                        CST_ID_R: vh.CST_ID_R);

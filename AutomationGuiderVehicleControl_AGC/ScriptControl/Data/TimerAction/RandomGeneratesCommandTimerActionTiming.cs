@@ -98,7 +98,7 @@ namespace com.mirle.ibg3k0.sc.Data.TimerAction
                         //case DebugParameter.CycleRunTestType.Normal:
                         //    CycleRunTest();
                         //    break;
-                        case DebugParameter.CycleRunTestType.IgnorePortStatus:
+                        case DebugParameter.CycleRunTestType.PortTrans:
                             CycleRunIgnorePortStatus();
                             break;
                         case DebugParameter.CycleRunTestType.OnlyMove:
@@ -165,94 +165,51 @@ namespace com.mirle.ibg3k0.sc.Data.TimerAction
 
 
         List<APORTSTATION> agvStations = null;
-        private async void CycleRunIgnorePortStatus()
+        private void CycleRunIgnorePortStatus()
         {
             //List<AVEHICLE> vhs = scApp.VehicleBLL.cache.loadAllVh();
 
             //List<AZONE> zones = scApp.ZoneBLL.cache.LoadZones();
             //foreach (var zone in zones)
             //{
-            Task<(bool is_success, object result)> find_idle_vh_result = findIdleForCycleLoadUnload();
-            Task<(bool is_success, object result)> find_has_cst_agv_station_result = findHasCSTAndInculdCycleTestPortStation();
-            Task<(bool is_success, object result)> find_no_cst_agv_station_result = findNoCSTAndInculdCycleTestPortStation();
-            var check_results = await Task.WhenAll(find_idle_vh_result, find_has_cst_agv_station_result, find_no_cst_agv_station_result);
-            bool is_success = check_results.Where(result => result.is_success == false).Count() == 0;
-            if (is_success)
+            int tran_count = scApp.TransferBLL.db.vTransfer.getCurrentTransferCommandCount();
+            if (tran_count >= 3)
             {
-                List<AVEHICLE> idle_vhs = check_results[0].result as List<AVEHICLE>;
-                if (idle_vhs == null || idle_vhs.Count == 0) return;
-                AVEHICLE idle_vh = idle_vhs[0];
-                APORTSTATION has_cst_agv_station_port = check_results[1].result as APORTSTATION;
-                APORTSTATION no_cst_agv_station_port = check_results[2].result as APORTSTATION;
-                if (idle_vh == null || has_cst_agv_station_port == null || no_cst_agv_station_port == null) return;
-                if (scApp.GuideBLL.IsRoadWalkable(idle_vh.CUR_ADR_ID, no_cst_agv_station_port.ADR_ID) &&
-                    scApp.GuideBLL.IsRoadWalkable(no_cst_agv_station_port.ADR_ID, has_cst_agv_station_port.ADR_ID))
-                {
-                    scApp.VehicleService.Command.Loadunload(idle_vh.VEHICLE_ID,
-                    has_cst_agv_station_port.CST_ID,
-                    has_cst_agv_station_port.ADR_ID, no_cst_agv_station_port.ADR_ID,
-                    has_cst_agv_station_port.PORT_ID, no_cst_agv_station_port.PORT_ID);
-
-                    //has_cst_agv_station_port.TestTimes++;
-                    no_cst_agv_station_port.TestTimes++;
-                }
-                else
-                {
-                    LogHelper.Log(logger: logger, LogLevel: LogLevel.Debug, Class: nameof(RandomGeneratesCommandTimerActionTiming), Device: string.Empty,
-                       Data: $"Can't find the path.");
-                }
+                return;
             }
-            //}
 
+            (bool is_success, APORTSTATION result) find_has_cst_agv_station_result = findHasCSTAndInculdCycleTestPortStation();
+            if (!find_has_cst_agv_station_result.is_success) return;
+            (bool is_success, APORTSTATION result) find_no_cst_agv_station_result = findNoCSTAndInculdCycleTestPortStation();
+            if (!find_no_cst_agv_station_result.is_success) return;
 
-            //foreach (AVEHICLE vh in vhs)
-            //{
-            //    if (vh.isTcpIpConnect &&
-            //        vh.MODE_STATUS == ProtocolFormat.OHTMessage.VHModeStatus.AutoRemote &&
-            //        vh.ACT_STATUS == ProtocolFormat.OHTMessage.VHActionStatus.NoCommand &&
-            //        !SCUtility.isEmpty(vh.CUR_ADR_ID) &&
-            //        scApp.CMDBLL.canAssignCmdNew(vh.VEHICLE_ID, E_CMD_TYPE.Move).canAssign)
-            //    {
-            //        //找一份目前儲位的列表
-            //        if (agvStations == null || agvStations.Count == 0)
-            //        {
-            //            agvStations = scApp.PortStationBLL.OperateCatch.loadAGVPortStation().ToList();
-            //            agvStations = agvStations.Where(port => port.IncludeCycleTest).ToList();
-            //        }
-            //        //如果取完還是空的 就跳出去
-            //        if (agvStations == null || agvStations.Count == 0)
-            //            return;
-            //        APORTSTATION has_cst_port_station = agvStations.Where(port => !SCUtility.isEmpty(port.CST_ID)).FirstOrDefault();
-            //        if (has_cst_port_station == null)
-            //        {
-            //            LogHelper.Log(logger: logger, LogLevel: LogLevel.Debug, Class: nameof(RandomGeneratesCommandTimerActionTiming), Device: string.Empty,
-            //               Data: $"No find has cst port");
-            //            return;
-            //        }
-            //        else
-            //        {
-            //            agvStations.Remove(has_cst_port_station);
-            //        }
-            //        //隨機找出讓車子移至下一個Port的地方
-            //        int task_RandomIndex = rnd_Index.Next(agvStations.Count - 1);
-            //        APORTSTATION p = agvStations[task_RandomIndex];
-            //        bool isSuccess = true;
-            //        if (scApp.GuideBLL.IsRoadWalkable(vh.CUR_ADR_ID, has_cst_port_station.ADR_ID) &&
-            //            scApp.GuideBLL.IsRoadWalkable(has_cst_port_station.ADR_ID, p.ADR_ID))
-            //        {
-            //            isSuccess &= scApp.VehicleService.Command.Loadunload(vh.VEHICLE_ID,
-            //                has_cst_port_station.CST_ID,
-            //                has_cst_port_station.ADR_ID, p.ADR_ID,
-            //                has_cst_port_station.PORT_ID, p.PORT_ID);
-            //            agvStations.Remove(p);
-            //        }
-            //        else
-            //        {
-            //            LogHelper.Log(logger: logger, LogLevel: LogLevel.Debug, Class: nameof(RandomGeneratesCommandTimerActionTiming), Device: string.Empty,
-            //               Data: $"Has path not enable");
-            //        }
-            //    }
-            //}
+            APORTSTATION has_cst_agv_station_port = find_has_cst_agv_station_result.result;
+            APORTSTATION no_cst_agv_station_port = find_no_cst_agv_station_result.result;
+            var tran_obj = creatTransfeObj
+                (has_cst_agv_station_port.CST_ID, has_cst_agv_station_port.PORT_ID, no_cst_agv_station_port.PORT_ID);
+            no_cst_agv_station_port.TestTimes++;
+            scApp.TransferService.Creat(tran_obj);
+        }
+        private ATRANSFER creatTransfeObj(string cstID, string source, string dest)
+        {
+            return new ATRANSFER
+            {
+                CARRIER_ID = cstID,
+                ID = DateTime.Now.ToString(SCAppConstants.TimestampFormat_19),
+                COMMANDSTATE = 0,
+                HOSTSOURCE = source,
+                HOSTDESTINATION = dest,
+                PRIORITY = 0,
+                PAUSEFLAG = "0",
+                CMD_INSER_TIME = DateTime.Now,
+                TIME_PRIORITY = 0,
+                PORT_PRIORITY = 0,
+                PRIORITY_SUM = 0,
+                REPLACE = 0,
+                LOT_ID = "",
+                TRANSFERSTATE = E_TRAN_STATUS.Queue,
+                CHECKCODE = SECSConst.HCACK_Confirm
+            };
         }
 
 
@@ -412,7 +369,7 @@ namespace com.mirle.ibg3k0.sc.Data.TimerAction
             }
             return Task.FromResult((can_load_agv_station != null, (object)can_load_agv_station));
         }
-        private Task<(bool is_success, object result)> findHasCSTAndInculdCycleTestPortStation()
+        private (bool is_success, APORTSTATION result) findHasCSTAndInculdCycleTestPortStation()
         {
             //var agv_stations = scApp.PortStationBLL.OperateCatch.loadAGVPortStation(zoneID);
             var port_stations = scApp.PortStationBLL.OperateCatch.loadAllPortStation();
@@ -432,13 +389,14 @@ namespace com.mirle.ibg3k0.sc.Data.TimerAction
                         continue;
                     if (!port.IncludeCycleTest)
                         continue;
-                    if (scApp.CMDBLL.hasExcuteCMDBySourcePortOrDestinationPort(port.PORT_ID))
+                    //if (scApp.CMDBLL.hasExcuteCMDBySourcePortOrDestinationPort(port.PORT_ID))
+                    if (scApp.TransferBLL.db.vTransfer.getCurrentTransferCommandCountByPortID(port.PORT_ID) > 0)
                         continue;
                     port_station = port;
                     break;
                 }
             }
-            return Task.FromResult((port_station != null, (object)port_station));
+            return (port_station != null, port_station);
         }
 
         private Task<(bool is_success, object result)> findCycleTestPortStation()
@@ -471,7 +429,7 @@ namespace com.mirle.ibg3k0.sc.Data.TimerAction
             }
             return Task.FromResult((can_unload_agv_station != null, (object)can_unload_agv_station));
         }
-        private Task<(bool is_success, object result)> findNoCSTAndInculdCycleTestPortStation()
+        private (bool is_success, APORTSTATION result) findNoCSTAndInculdCycleTestPortStation()
         {
             var port_stations = scApp.PortStationBLL.OperateCatch.loadAllPortStation();
             APORTSTATION port_station = null;
@@ -505,7 +463,8 @@ namespace com.mirle.ibg3k0.sc.Data.TimerAction
                             continue;
                         }
                     }
-                    if (scApp.CMDBLL.hasExcuteCMDByDestinationPort(port.PORT_ID))
+                    //if (scApp.CMDBLL.hasExcuteCMDByDestinationPort(port.PORT_ID))
+                    if (scApp.TransferBLL.db.vTransfer.getCurrentTransferCommandCountByPortID(port.PORT_ID) >0)
                         continue;
                     port_station = port;
                     break;
@@ -514,7 +473,7 @@ namespace com.mirle.ibg3k0.sc.Data.TimerAction
                 //                           OrderBy(station => station.TestTimes).
                 //                           FirstOrDefault();
             }
-            return Task.FromResult((port_station != null, (object)port_station));
+            return (port_station != null, port_station);
         }
 
         private Task<(bool is_success, object result)> findIdleForCycleVehicle()

@@ -240,6 +240,13 @@ namespace com.mirle.ibg3k0.sc
                 return SCUtility.isMatche(CUR_ADR_ID, ChargeAdr);
             }
         }
+        public bool IsOnStandByAdr
+        {
+            get
+            {
+                return SCUtility.isMatche(CUR_ADR_ID, StandByAdr);
+            }
+        }
         public bool IsNeedToLongCharge()
         {
             return MODE_STATUS == VHModeStatus.AutoCharging &&

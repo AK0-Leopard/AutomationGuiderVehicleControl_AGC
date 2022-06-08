@@ -1340,7 +1340,6 @@ namespace com.mirle.ibg3k0.sc.Service
                                 string hostsource = first_waitting_excute_mcs_cmd.HOSTSOURCE;
                                 string hostdest = first_waitting_excute_mcs_cmd.HOSTDESTINATION;
                                 string from_adr = string.Empty;
-                                string to_adr = string.Empty;
                                 AVEHICLE bestSuitableVh = null;
                                 E_VH_TYPE vh_type = E_VH_TYPE.None;
 
@@ -1359,6 +1358,16 @@ namespace com.mirle.ibg3k0.sc.Service
                                 }
                                 else
                                 {
+                                    var try_get_portstation = scApp.PortStationBLL.OperateCatch.tryGetPortStationVhType(hostsource);
+                                    if (!try_get_portstation.isExist)
+                                    {
+                                        LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                                           Data: $"嘗試取得source port station:{hostsource}的物件失敗，無法派送搬送命令ID:{first_waitting_excute_mcs_cmd.ID}.");
+                                        continue;
+                                    }
+
+                                    from_adr = try_get_portstation.portStation.ADR_ID;
+
                                     bool is_cross_tran_command = first_waitting_excute_mcs_cmd.IsCrossZoneTransfer(scApp.PortStationBLL, scApp.ZoneBLL);
                                     if (is_cross_tran_command)
                                     {
@@ -1366,18 +1375,9 @@ namespace com.mirle.ibg3k0.sc.Service
                                     }
                                     else
                                     {
-                                        var try_get_portstation = scApp.PortStationBLL.OperateCatch.tryGetPortStationVhType(hostsource);
-                                        if (try_get_portstation.isExist)
-                                        {
-                                            vh_type = try_get_portstation.vhType;
-                                        }
-                                        else
-                                        {
-                                            LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
-                                               Data: $"嘗試取得Port station:{hostsource}的物件失敗，無法派送搬送命令ID:{first_waitting_excute_mcs_cmd.ID}.");
-                                            continue;
-                                        }
+                                        vh_type = try_get_portstation.portStation.LD_VH_TYPE;
                                     }
+
                                     bestSuitableVh = scApp.VehicleBLL.cache.findBestSuitableVhStepByStepFromAdr(scApp.GuideBLL, scApp.CMDBLL, from_adr, vh_type);
                                 }
                                 //bool source_is_a_port = false;

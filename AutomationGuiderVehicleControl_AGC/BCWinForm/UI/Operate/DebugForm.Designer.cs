@@ -421,6 +421,7 @@
             this.comboBox_port11 = new System.Windows.Forms.ComboBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.btn_online = new System.Windows.Forms.Button();
+            this.btn_AvoidTest = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -1882,7 +1883,7 @@
             // 
             this.cb_Cache_data_Name.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.cb_Cache_data_Name.FormattingEnabled = true;
-            this.cb_Cache_data_Name.Location = new System.Drawing.Point(234, 10);
+            this.cb_Cache_data_Name.Location = new System.Drawing.Point(234, 5);
             this.cb_Cache_data_Name.Name = "cb_Cache_data_Name";
             this.cb_Cache_data_Name.Size = new System.Drawing.Size(164, 30);
             this.cb_Cache_data_Name.TabIndex = 1;
@@ -2067,6 +2068,7 @@
             // 
             // tabPage3
             // 
+            this.tabPage3.Controls.Add(this.btn_AvoidTest);
             this.tabPage3.Controls.Add(this.groupBox6);
             this.tabPage3.Controls.Add(this.num_timePriorityIncrement);
             this.tabPage3.Controls.Add(this.label103);
@@ -4583,6 +4585,16 @@
             this.btn_online.UseVisualStyleBackColor = true;
             this.btn_online.Click += new System.EventHandler(this.btn_online_Click);
             // 
+            // btn_AvoidTest
+            // 
+            this.btn_AvoidTest.Location = new System.Drawing.Point(990, 396);
+            this.btn_AvoidTest.Name = "btn_AvoidTest";
+            this.btn_AvoidTest.Size = new System.Drawing.Size(226, 50);
+            this.btn_AvoidTest.TabIndex = 60;
+            this.btn_AvoidTest.Text = "AvoidGiudeTest";
+            this.btn_AvoidTest.UseVisualStyleBackColor = true;
+            this.btn_AvoidTest.Click += new System.EventHandler(this.btn_AvoidTest_Click);
+            // 
             // DebugForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(10F, 22F);
@@ -5070,5 +5082,6 @@
         private System.Windows.Forms.Button btn_SetHPRVehicle;
         private System.Windows.Forms.Label label104;
         private System.Windows.Forms.ComboBox cmbHPRVehicle;
+        private System.Windows.Forms.Button btn_AvoidTest;
     }
 }

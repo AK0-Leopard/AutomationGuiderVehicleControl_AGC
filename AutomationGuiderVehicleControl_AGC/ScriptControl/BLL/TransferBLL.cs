@@ -195,7 +195,24 @@ namespace com.mirle.ibg3k0.sc.BLL
 
                     return (is_status_ready, is_pausing);
                 }
-
+                public int getCurrentTransferCommandCount()
+                {
+                    int count = 0;
+                    using (DBConnection_EF con = DBConnection_EF.GetUContext())
+                    {
+                        count = vtranDao.getVTransferAllCount(con);
+                    }
+                    return count;
+                }
+                public int getCurrentTransferCommandCountByPortID(string portID)
+                {
+                    int count = 0;
+                    using (DBConnection_EF con = DBConnection_EF.GetUContext())
+                    {
+                        count = vtranDao.getVTransferCountByPortID(con, portID);
+                    }
+                    return count;
+                }
                 //public bool hasVTransferCommandUnfinished(string zoneID)
                 //{
                 //    List<VTRANSFER> vtrans = null;
@@ -434,7 +451,7 @@ namespace com.mirle.ibg3k0.sc.BLL
                     logger.Error(ex, $"Exception:{url}");
                 }
             }
-            public bool checkIsNeedWaitForLoad(IAGVStationType agvStation,int waitTimeOut)
+            public bool checkIsNeedWaitForLoad(IAGVStationType agvStation, int waitTimeOut)
             {
                 string result = "";
                 string url = "";

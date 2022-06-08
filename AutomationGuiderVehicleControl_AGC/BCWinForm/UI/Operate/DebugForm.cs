@@ -1678,5 +1678,10 @@ namespace com.mirle.ibg3k0.bc.winform.UI
         {
             DebugParameter.isActiveHPRScenario = ck_ActiveHPRScenario.Checked;
         }
+
+        private void btn_AvoidTest_Click(object sender, EventArgs e)
+        {
+            bcApp.SCApplication.VehicleService.Send.testAvoid();
+        }
     }
 }
