@@ -286,6 +286,8 @@ namespace com.mirle.ibg3k0.sc.Data.SECS.AGVC.AGC
                     public string CarrierLoc;
                     [SecsElement(Index = 3, Type = SecsElement.SecsElementType.TYPE_ASCII, Length = 64)]
                     public string VehicleID;
+                    [SecsElement(Index = 4, Type = SecsElement.SecsElementType.TYPE_ASCII, Length = 64)]
+                    public string VehicleLocation;
                 }
                 [Serializable]
                 public class VIDITEM_80 : SXFY

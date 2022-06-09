@@ -172,6 +172,7 @@
             this.includeCycleTest = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.btn_refresf_portsation_info = new System.Windows.Forms.Button();
             this.tabPage3 = new System.Windows.Forms.TabPage();
+            this.btn_AvoidTest = new System.Windows.Forms.Button();
             this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.ck_ActiveHPRScenario = new System.Windows.Forms.CheckBox();
             this.lb_VehicleHPRStatus = new System.Windows.Forms.Label();
@@ -421,7 +422,6 @@
             this.comboBox_port11 = new System.Windows.Forms.ComboBox();
             this.tabPage2 = new System.Windows.Forms.TabPage();
             this.btn_online = new System.Windows.Forms.Button();
-            this.btn_AvoidTest = new System.Windows.Forms.Button();
             this.groupBox1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox3.SuspendLayout();
@@ -1883,7 +1883,7 @@
             // 
             this.cb_Cache_data_Name.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.cb_Cache_data_Name.FormattingEnabled = true;
-            this.cb_Cache_data_Name.Location = new System.Drawing.Point(234, 5);
+            this.cb_Cache_data_Name.Location = new System.Drawing.Point(234, 10);
             this.cb_Cache_data_Name.Name = "cb_Cache_data_Name";
             this.cb_Cache_data_Name.Size = new System.Drawing.Size(164, 30);
             this.cb_Cache_data_Name.TabIndex = 1;
@@ -2109,6 +2109,16 @@
             this.tabPage3.TabIndex = 2;
             this.tabPage3.Text = "Test Tool";
             this.tabPage3.UseVisualStyleBackColor = true;
+            // 
+            // btn_AvoidTest
+            // 
+            this.btn_AvoidTest.Location = new System.Drawing.Point(990, 396);
+            this.btn_AvoidTest.Name = "btn_AvoidTest";
+            this.btn_AvoidTest.Size = new System.Drawing.Size(226, 50);
+            this.btn_AvoidTest.TabIndex = 60;
+            this.btn_AvoidTest.Text = "AvoidGiudeTest";
+            this.btn_AvoidTest.UseVisualStyleBackColor = true;
+            this.btn_AvoidTest.Click += new System.EventHandler(this.btn_AvoidTest_Click);
             // 
             // groupBox6
             // 
@@ -4584,16 +4594,6 @@
             this.btn_online.Text = "Online with MCS";
             this.btn_online.UseVisualStyleBackColor = true;
             this.btn_online.Click += new System.EventHandler(this.btn_online_Click);
-            // 
-            // btn_AvoidTest
-            // 
-            this.btn_AvoidTest.Location = new System.Drawing.Point(990, 396);
-            this.btn_AvoidTest.Name = "btn_AvoidTest";
-            this.btn_AvoidTest.Size = new System.Drawing.Size(226, 50);
-            this.btn_AvoidTest.TabIndex = 60;
-            this.btn_AvoidTest.Text = "AvoidGiudeTest";
-            this.btn_AvoidTest.UseVisualStyleBackColor = true;
-            this.btn_AvoidTest.Click += new System.EventHandler(this.btn_AvoidTest_Click);
             // 
             // DebugForm
             // 

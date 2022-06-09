@@ -1951,24 +1951,23 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AGC
                 string transfer_id = "";
                 string carrier_id = "";
                 string carrier_loc = "";
-                VTRANSFER vtransfer = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(transferID);
-                if (vtransfer != null)
-                {
-                    transfer_id = SCUtility.Trim(vtransfer.ID, true);
-                    carrier_id = SCUtility.Trim(vtransfer.CARRIER_ID, true);
-                    carrier_loc = SCUtility.Trim(vtransfer.CARRIER_LOCATION, true);
-                }
+                //VTRANSFER vtransfer = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(transferID);
+                //if (vtransfer != null)
+                //{
+                //    transfer_id = SCUtility.Trim(vtransfer.ID, true);
+                //    carrier_id = SCUtility.Trim(vtransfer.CARRIER_ID, true);
+                //    carrier_loc = SCUtility.Trim(vtransfer.CARRIER_LOCATION, true);
+                //}
                 var vh = scApp.VehicleBLL.cache.getVehicle(vhID);
+                string vh_state = SECSConst.convert2MCS(vh.State, vh.ChargeStatus);
+
                 VIDCollection vid_collection = new VIDCollection();
-                vid_collection.VID_58_CommandID.CommandID = transfer_id;
-                vid_collection.VID_71_VehicleInfo.VehicleInfo.VehicleID = vh == null ? "" : vh.Real_ID;
-                vid_collection.VID_71_VehicleInfo.VehicleInfo.VehicleState = vh == null ? "0" : ((int)vh.State).ToString();
+                vid_collection.VID_83_UnitID.UnitID = vh.Real_ID;
                 vid_collection.VID_81_AlarmID.AlarmID = alarmID;
                 vid_collection.VID_82_AlarmText.AlarmText = alarmTest;
-                vid_collection.VID_54_CarrierID.CarrierID = carrier_id;
-                vid_collection.VID_56_CarrierLoc.CarrierLoc = carrier_loc;
+                vid_collection.VID_72_VehicleState.VehicleState = vh_state;
                 //AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Alarm_Set, vid_collection);
-                AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Alarm_Cleared, vid_collection);
+                AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Unit_Alarm_Cleared, vid_collection);
                 if (reportQueues == null)
                 {
                     S6F11SendMessage(mcs_queue);
@@ -1993,23 +1992,24 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AGC
                 string transfer_id = "";
                 string carrier_id = "";
                 string carrier_loc = "";
-                VTRANSFER vtransfer = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(transferID);
-                if (vtransfer != null)
-                {
-                    transfer_id = SCUtility.Trim(vtransfer.ID, true);
-                    carrier_id = SCUtility.Trim(vtransfer.CARRIER_ID, true);
-                    carrier_loc = SCUtility.Trim(vtransfer.CARRIER_LOCATION, true);
-                }
+
+                //VTRANSFER vtransfer = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(transferID);
+                //if (vtransfer != null)
+                //{
+                //    transfer_id = SCUtility.Trim(vtransfer.ID, true);
+                //    carrier_id = SCUtility.Trim(vtransfer.CARRIER_ID, true);
+                //    carrier_loc = SCUtility.Trim(vtransfer.CARRIER_LOCATION, true);
+                //}
                 var vh = scApp.VehicleBLL.cache.getVehicle(vhID);
+                string vh_state = SECSConst.convert2MCS(vh.State, vh.ChargeStatus);
+
                 VIDCollection vid_collection = new VIDCollection();
-                vid_collection.VID_58_CommandID.CommandID = transfer_id;
-                vid_collection.VID_71_VehicleInfo.VehicleInfo.VehicleID = vh == null ? "" : vh.Real_ID;
-                vid_collection.VID_71_VehicleInfo.VehicleInfo.VehicleState = vh == null ? "0" : ((int)vh.State).ToString();
+                vid_collection.VID_83_UnitID.UnitID = vh.Real_ID;
                 vid_collection.VID_81_AlarmID.AlarmID = alarmID;
                 vid_collection.VID_82_AlarmText.AlarmText = alarmTest;
-                vid_collection.VID_54_CarrierID.CarrierID = carrier_id;
-                vid_collection.VID_56_CarrierLoc.CarrierLoc = carrier_loc;
-                AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Alarm_Set, vid_collection);
+                vid_collection.VID_72_VehicleState.VehicleState = vh_state;
+                //AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Alarm_Set, vid_collection);
+                AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Unit_Alarm_Set, vid_collection);
                 if (reportQueues == null)
                 {
                     S6F11SendMessage(mcs_queue);
@@ -2389,12 +2389,22 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AGC
             vid_collection.VH_ID = vtransfer.VH_ID;
             var line = scApp.getEQObjCacheManager().getLine();
             var vh = scApp.VehicleBLL.cache.getVehicle(vtransfer.VH_ID);
+
+            string eqp_name = line.LINE_ID;
+            string command_id = vtransfer.ID;
+            string priority = vtransfer.PRIORITY.ToString();
+            string carrier_id = vtransfer.CARRIER_ID;
+            string source_port = vtransfer.HOSTSOURCE;
+            string dest_port = vtransfer.HOSTDESTINATION;
+            string transfer_port_id = getTransferPort(vtransfer.COMMANDSTATE, source_port, dest_port);
+
             string vh_real_id = "";
             string vh_state = "";
             string vh_battery_value = "";
             string vh_communication = "";
             string vh_control_mode = "";
             string vh_last_position = "";
+            string vh_current_location = "0000";
             if (vh != null)
             {
                 vh_real_id = vh?.Real_ID;
@@ -2406,15 +2416,9 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AGC
                 double t_x = (vh.X_Axis * -1) + max_x;
                 //vh_last_position = $"[{vh.X_Axis},{vh.Y_Axis}]";
                 vh_last_position = $"[{t_x},{vh.Y_Axis}]";
+                vh_current_location = getVhCurrentPort(scApp.PortStationBLL, vh.CUR_ADR_ID, source_port, dest_port);
             }
 
-            string eqp_name = line.LINE_ID;
-            string command_id = vtransfer.ID;
-            string priority = vtransfer.PRIORITY.ToString();
-            string carrier_id = vtransfer.CARRIER_ID;
-            string source_port = vtransfer.HOSTSOURCE;
-            string dest_port = vtransfer.HOSTDESTINATION;
-            string transfer_port_id = getTransferPort(vtransfer.COMMANDSTATE, source_port, dest_port);
             //if (vh.State == AVEHICLE.VehicleState.ACQUIRING)
             //{
             //    transfer_port_id = source_port;
@@ -2484,6 +2488,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AGC
             vid_collection.VID_77_TransferCompleteInfo.TransferCompleteInfo.TransferInfo.DestPort = dest_port;
             vid_collection.VID_77_TransferCompleteInfo.TransferCompleteInfo.CarrierLoc = carrier_loc;
             vid_collection.VID_77_TransferCompleteInfo.TransferCompleteInfo.VehicleID = vh_real_id;
+            vid_collection.VID_77_TransferCompleteInfo.TransferCompleteInfo.VehicleLocation = vh_current_location;
 
             //vid_collection.VID_80_CommandType.CommandType = "";
 
@@ -2555,18 +2560,22 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AGC
                 return sourcePort;
             }
         }
-        private string getTransferPort(PortStationBLL portStationBLL, string vhCurrentAdrID, string sourcePort, string descPort)
+        private string getVhCurrentPort(PortStationBLL portStationBLL, string vhCurrentAdrID, string sourcePort, string descPort)
         {
             //1.用目前車子所在位置
-            var port_stations = portStationBLL.OperateCatch.getPortStationByAdrID(vhCurrentAdrID);
-            bool is_in_port = port_stations.Where(station => SCUtility.isMatche(station.PORT_ID, sourcePort)).Count() > 0;
-            if (is_in_port)
+            var port_stations_id = portStationBLL.OperateCatch.getPortStationByAdrID(vhCurrentAdrID).
+                                                            Select(p => SCUtility.Trim(p.PORT_ID, true));
+            if (port_stations_id.Contains(sourcePort))
             {
                 return sourcePort;
             }
-            else
+            else if (port_stations_id.Contains(descPort))
             {
                 return descPort;
+            }
+            else
+            {
+                return "0000";
             }
         }
         #endregion VTRANSFER Info
