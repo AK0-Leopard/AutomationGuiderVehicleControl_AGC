@@ -398,7 +398,7 @@ namespace com.mirle.ibg3k0.sc.BLL
         /// <param name="cmdID"></param>
         /// <param name="reportqueues"></param>
         /// <returns></returns>
-        public bool newReportUnloadArrivals(string cmdID, List<AMCSREPORTQUEUE> reportqueues,bool forHPRSpecialReport = false)
+        public bool newReportUnloadArrivals(string cmdID, List<AMCSREPORTQUEUE> reportqueues, bool forHPRSpecialReport = false)
         {
             bool isSuccsess = true;
             if (forHPRSpecialReport)
@@ -473,27 +473,30 @@ namespace com.mirle.ibg3k0.sc.BLL
                     case CompleteStatus.ForceNormalFinishByOp:
                     case CompleteStatus.IdmisMatch:
                     case CompleteStatus.IdreadFailed:
-                        bool isToVirtualEQPort = false;
-                        VTRANSFER vtransfer = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(cmdID);
-                        if (vtransfer != null)
-                        {
-                            if(SCUtility.isMatche( vtransfer.HOSTDESTINATION, scApp.HPREmptyCarrierVirtualPort))
-                            {
-                                isToVirtualEQPort = true;
-                            }
-                        }
-                        if (!isToVirtualEQPort)
-                        {
-                            isSuccess = newReportTransferCommandFinish(cmdID, reportqueues,false);
-                        }
-                        else
-                        {
-                            isSuccess = newReportTransferCommandFinish(cmdID, reportqueues,true) ;//到虛擬EQ Port的命令要特別處理
-                        }
+                        isSuccess = newReportTransferCommandFinish(cmdID, reportqueues, false);
+                        //bool isToVirtualEQPort = false;
+                        //VTRANSFER vtransfer = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(cmdID);
+                        //if (vtransfer != null)
+                        //{
+                        //    if (SCUtility.isMatche(vtransfer.HOSTDESTINATION, scApp.HPREmptyCarrierVirtualPort))
+                        //    {
+                        //        isToVirtualEQPort = true;
+                        //    }
+                        //}
+                        //if (!isToVirtualEQPort)
+                        //{
+                        //    isSuccess = newReportTransferCommandFinish(cmdID, reportqueues, false);
+                        //}
+                        //else
+                        //{
+                        //    isSuccess = newReportTransferCommandFinish(cmdID, reportqueues, true);//到虛擬EQ Port的命令要特別處理
+                        //}
                         break;
                     case CompleteStatus.Move:
-                    case CompleteStatus.MoveToCharger:
                         //Nothing...
+                        break;
+                    case CompleteStatus.MoveToCharger:
+                        isSuccess = newReportChargeCommandFinish(cmdID, reportqueues, false);
                         break;
                     default:
                         logger.Info($"Proc func:CommandCompleteReport, but completeStatus:{completeStatus} notimplemented ");
@@ -525,6 +528,13 @@ namespace com.mirle.ibg3k0.sc.BLL
             isSuccsess = isSuccsess && iBSEMDriver.S6F11SendTransferCompleted(cmdID, reportqueues, forHPRSpecialReport);
             return isSuccsess;
         }
+        public bool newReportChargeCommandFinish(string cmdID, List<AMCSREPORTQUEUE> reportqueues, bool forHPRSpecialReport = false)
+        {
+            bool isSuccsess = true;
+            isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleAcquireCompleted(cmdID, reportqueues, forHPRSpecialReport);
+            isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleDepositCompleted(cmdID, reportqueues, forHPRSpecialReport);
+            return isSuccsess;
+        }
 
         public bool newReportTransferCancelCompleted(string cmdID, bool isAssnged, List<AMCSREPORTQUEUE> reportqueues)
         {
@@ -534,6 +544,7 @@ namespace com.mirle.ibg3k0.sc.BLL
             isSuccsess = isSuccsess && iBSEMDriver.S6F11SendTransferCancelCompleted(cmdID, reportqueues);
             return isSuccsess;
         }
+
 
         public bool newReportTransferCancelInitial(string cmdID, List<AMCSREPORTQUEUE> reportqueues)
         {

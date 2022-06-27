@@ -79,7 +79,7 @@ namespace com.mirle.ibg3k0.sc.Data.SECS.AGVC.AGC
                     case AVEHICLE.VehicleState.NOT_ASSIGNED:
                         return VHSTATE_NotAssigned;
                     case AVEHICLE.VehicleState.ENROUTE:
-                        return VHSTATE_NotAssigned;
+                        return VHSTATE_Enroute;
                     case AVEHICLE.VehicleState.ACQUIRING:
                         return VHSTATE_Acquiring;
                     case AVEHICLE.VehicleState.DEPOSITING:
