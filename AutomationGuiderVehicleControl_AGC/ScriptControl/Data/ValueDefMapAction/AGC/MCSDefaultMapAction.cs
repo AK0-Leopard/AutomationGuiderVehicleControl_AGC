@@ -572,7 +572,7 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AGC
                 DateTime mesDateTime = DateTime.Now;
                 try
                 {
-                    mesDateTime = DateTime.ParseExact(timeStr.Trim(), SCAppConstants.TimestampFormat_16, CultureInfo.CurrentCulture);
+                    mesDateTime = DateTime.ParseExact(timeStr.Trim(), SCAppConstants.TimestampFormat_14, CultureInfo.CurrentCulture);
                 }
                 catch (Exception dtEx)
                 {
@@ -774,7 +774,6 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AGC
             if (command_id_item != null)
             {
                 command_id = command_id_item.CPVAL;
-                return (false, SECSConst.HCACK_Rejected, command_id);//由於AGVM尚未準備好Cancel流程，因此一律先拒絕。20210115
 
                 ATRANSFER cmd_mcs = scApp.CMDBLL.GetTransferByID(command_id);
                 if (cmd_mcs == null)
