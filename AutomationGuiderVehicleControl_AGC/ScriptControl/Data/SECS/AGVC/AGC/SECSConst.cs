@@ -85,7 +85,8 @@ namespace com.mirle.ibg3k0.sc.Data.SECS.AGVC.AGC
                     case AVEHICLE.VehicleState.DEPOSITING:
                         return VHSTATE_Depositiong;
                     default:
-                        throw new Exception("參數錯誤"); //todo kevin 要帶入正確的Exception。
+                        //throw new Exception("參數錯誤"); //todo kevin 要帶入正確的Exception。
+                        return VHSTATE_Enroute; //todo kevin 要帶入正確的Exception。
                 }
             }
         }

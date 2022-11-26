@@ -1883,7 +1883,7 @@
             // 
             this.cb_Cache_data_Name.Anchor = System.Windows.Forms.AnchorStyles.Left;
             this.cb_Cache_data_Name.FormattingEnabled = true;
-            this.cb_Cache_data_Name.Location = new System.Drawing.Point(234, 10);
+            this.cb_Cache_data_Name.Location = new System.Drawing.Point(234, 5);
             this.cb_Cache_data_Name.Name = "cb_Cache_data_Name";
             this.cb_Cache_data_Name.Size = new System.Drawing.Size(164, 30);
             this.cb_Cache_data_Name.TabIndex = 1;
@@ -4434,6 +4434,7 @@
             // 
             // num_BatteryHighBoundaryValue
             // 
+            this.num_BatteryHighBoundaryValue.Enabled = false;
             this.num_BatteryHighBoundaryValue.Location = new System.Drawing.Point(667, 878);
             this.num_BatteryHighBoundaryValue.Name = "num_BatteryHighBoundaryValue";
             this.num_BatteryHighBoundaryValue.Size = new System.Drawing.Size(158, 30);
@@ -4451,6 +4452,7 @@
             // 
             // num_BatteryLowBoundaryValue
             // 
+            this.num_BatteryLowBoundaryValue.Enabled = false;
             this.num_BatteryLowBoundaryValue.Location = new System.Drawing.Point(284, 878);
             this.num_BatteryLowBoundaryValue.Name = "num_BatteryLowBoundaryValue";
             this.num_BatteryLowBoundaryValue.Size = new System.Drawing.Size(158, 30);

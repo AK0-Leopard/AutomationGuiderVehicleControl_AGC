@@ -65,7 +65,8 @@ namespace com.mirle.ibg3k0.sc
 
         public static UInt16 BATTERYLEVELVALUE_FULL { get; private set; } = 100;
         public static UInt16 BATTERYLEVELVALUE_HIGH { get; private set; } = 80;
-        public static UInt16 BATTERYLEVELVALUE_LOW { get; private set; } = 40;
+        //public static UInt16 BATTERYLEVELVALUE_LOW { get; private set; } = 40;
+        public static UInt16 BATTERYLEVELVALUE_LOW { get; private set; } = 0;
         /// <summary>
         /// 在一次的Reserve要不到的過程中，最多可以Override失敗的次數
         /// </summary>
