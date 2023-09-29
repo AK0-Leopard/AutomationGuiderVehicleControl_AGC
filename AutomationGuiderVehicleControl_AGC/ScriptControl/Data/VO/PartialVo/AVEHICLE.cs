@@ -245,7 +245,9 @@ namespace com.mirle.ibg3k0.sc
         {
             get
             {
-                return SCUtility.isMatche(CUR_ADR_ID, StandByAdr);
+                //return SCUtility.isMatche(CUR_ADR_ID, StandByAdrs);
+                string cur_adr_id = SCUtility.Trim(CUR_ADR_ID, true);
+                return StandByAdrs.Contains(cur_adr_id);
             }
         }
         public bool IsNeedToLongCharge()
@@ -1072,7 +1074,7 @@ namespace com.mirle.ibg3k0.sc
         [JsonIgnore]
         [BaseElement(NonChangeFromOtherVO = true)]
         public override string Real_ID { get; set; }
-        public string StandByAdr { get; set; }
+        public List<string> StandByAdrs { get; set; }
         public string ChargeAdr { get; set; }
 
 

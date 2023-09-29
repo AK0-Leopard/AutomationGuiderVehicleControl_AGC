@@ -22,6 +22,8 @@ using com.mirle.ibg3k0.sc.App;
 using com.mirle.ibg3k0.sc.Data.VO;
 using NLog;
 using com.mirle.ibg3k0.bcf.Common;
+using com.mirle.ibg3k0.sc.Common;
+using com.mirle.ibg3k0.sc.ProtocolFormat.OHTMessage;
 
 namespace com.mirle.ibg3k0.sc.Data.DAO
 {
@@ -55,7 +57,7 @@ namespace com.mirle.ibg3k0.sc.Data.DAO
                                 REAL_ID = c.Field<string>("REAL_ID"),
                                 LOCATION_ID_R = c.Field<string>("LOCATION_ID_R"),
                                 LOCATION_ID_L = c.Field<string>("LOCATION_ID_L"),
-                                STAND_BY_ADR = c.Field<string>("STAND_BY_ADR"),
+                                STAND_BY_ADRS = LoadStandByAddresses(c.Field<string>("STAND_BY_ADR")),
                                 CHARGE_ADR = c.Field<string>("CHARGE_ADR")
                             };
                 return query.SingleOrDefault();
@@ -64,6 +66,19 @@ namespace com.mirle.ibg3k0.sc.Data.DAO
             {
                 logger.Warn(ex);
                 throw;
+            }
+        }
+        List<string> LoadStandByAddresses(string standByAddresses)
+        {
+            if (SCUtility.isEmpty(standByAddresses)) return new List<string>();
+            if (standByAddresses.Contains("-"))
+            {
+                string[] infos = standByAddresses.Split('-');
+                return infos.ToList();
+            }
+            else
+            {
+                return new List<string>() { standByAddresses };
             }
         }
 

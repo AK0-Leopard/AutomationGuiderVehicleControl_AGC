@@ -12,7 +12,7 @@ namespace com.mirle.ibg3k0.sc.Data.VO
         public string REAL_ID;
         public string LOCATION_ID_R;
         public string LOCATION_ID_L;
-        public string STAND_BY_ADR;
+        public List<string> STAND_BY_ADRS;
         public string CHARGE_ADR;
     }
 }

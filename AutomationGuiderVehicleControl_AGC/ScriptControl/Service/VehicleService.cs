@@ -521,7 +521,7 @@ namespace com.mirle.ibg3k0.sc.Service
             {
                 GuideInfo guideInfo = new GuideInfo();
                 guideInfo.GuideSections.AddRange(new string[] { "10501", "10601" });
-                guideInfo.GuideAddresses.AddRange(new string[] { "10006", "10007" , "10008" });
+                guideInfo.GuideAddresses.AddRange(new string[] { "10006", "10007", "10008" });
                 var result = guideInfo.converToGuideData(scApp.ReserveBLL);
             }
             private bool sendMessage_ID_51_AVOID_REQUEST(string vh_id, string avoidAddress, string[] guideSection, string[] guideAddresses)
@@ -4312,7 +4312,7 @@ namespace com.mirle.ibg3k0.sc.Service
             {
                 AVEHICLE vh = sender as AVEHICLE;
                 if (vh == null) return;
-                if(vh.IsOnCharge)
+                if (vh.IsOnCharge)
                 {
                     LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
                        Data: $"vh:{vh.VEHICLE_ID} 位於換電區:{vh.CUR_ADR_ID}，因此不進行Idling的待命區呼叫流程",
@@ -4321,7 +4321,7 @@ namespace com.mirle.ibg3k0.sc.Service
                        CST_ID_R: vh.CST_ID_R);
                     return;
                 }
-                if(vh.IsOnStandByAdr)
+                if (vh.IsOnStandByAdr)
                 {
                     LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
                        Data: $"vh:{vh.VEHICLE_ID} 已經於Stand By Adr，不再進行派送",
@@ -4331,16 +4331,56 @@ namespace com.mirle.ibg3k0.sc.Service
                     return;
                 }
                 bool has_cmd_excute = scApp.CMDBLL.cache.hasCmdExcute(vh.VEHICLE_ID);
-                if (!has_cmd_excute)
+                if (has_cmd_excute)
                 {
-                    Command.Move(vh.VEHICLE_ID, vh.StandByAdr);
+                    LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                       Data: $"vh:{vh.VEHICLE_ID} 命令執行中，不進行待命點的派送",
+                       VehicleID: vh.VEHICLE_ID,
+                       CST_ID_L: vh.CST_ID_L,
+                       CST_ID_R: vh.CST_ID_R);
+                    return;
                 }
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                   Data: $"vh:{vh.VEHICLE_ID} 的待命點有:{string.Join(",", vh.StandByAdrs)}，開始找尋最近的...",
+                   VehicleID: vh.VEHICLE_ID,
+                   CST_ID_L: vh.CST_ID_L,
+                   CST_ID_R: vh.CST_ID_R);
 
+                var get_result = TryGetRecentlyStandbyAddress(vh, vh.StandByAdrs);
+
+                LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                   Data: $"vh:{vh.VEHICLE_ID} 的待命點找尋結果:{get_result.isSuccess},選擇的待命點:{get_result.recentlyStandby}",
+                   VehicleID: vh.VEHICLE_ID,
+                   CST_ID_L: vh.CST_ID_L,
+                   CST_ID_R: vh.CST_ID_R);
+
+                if (get_result.isSuccess)
+                {
+                    Command.Move(vh.VEHICLE_ID, get_result.recentlyStandby);
+                }
             }
             catch (Exception ex)
             {
                 logger.Error(ex, "Exception:");
             }
+        }
+        private (bool isSuccess, string recentlyStandby) TryGetRecentlyStandbyAddress(AVEHICLE vh, List<string> standByAddresses)
+        {
+            string recently_standby_adr = "";
+            string current_adr = SCUtility.Trim(vh.CUR_ADR_ID, true);
+            int dis = int.MaxValue;
+
+
+            foreach (string standby_adr in standByAddresses)
+            {
+                var guide_info = scApp.GuideBLL.getGuideInfo(current_adr, standby_adr);
+                if (guide_info.isSuccess && guide_info.totalCost < dis)
+                {
+                    dis = guide_info.totalCost;
+                    recently_standby_adr = standby_adr;
+                }
+            }
+            return (!SCUtility.isEmpty(recently_standby_adr), SCUtility.Trim(recently_standby_adr, true));
         }
 
         #endregion Vh Event Handler
