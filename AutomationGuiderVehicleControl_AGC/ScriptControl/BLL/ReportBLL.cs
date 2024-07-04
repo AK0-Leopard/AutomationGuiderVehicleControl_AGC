@@ -440,13 +440,13 @@ namespace com.mirle.ibg3k0.sc.BLL
         public bool newReportRunTimetatus(string vhID)
         {
             bool isSuccsess = true;
-            isSuccsess = isSuccsess && iBSEMDriver.S6F11SendRunTimeStatus(vhID, null);
+            //isSuccsess = isSuccsess && iBSEMDriver.S6F11SendRunTimeStatus(vhID, null);
             return isSuccsess;
         }
         public bool newReportBettryValus(string vhID)
         {
             bool isSuccsess = true;
-            isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleBatteryValus(vhID, null);
+            //isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleBatteryValus(vhID, null);
             return isSuccsess;
         }
 
@@ -593,13 +593,13 @@ namespace com.mirle.ibg3k0.sc.BLL
         public bool newReportVehicleAuto(string vhID, List<AMCSREPORTQUEUE> reportqueues)
         {
             bool isSuccsess = true;
-            isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleAuto(vhID, reportqueues);
+            //isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleAuto(vhID, reportqueues);
             return isSuccsess;
         }
         public bool newReportVehicleManual(string vhID, List<AMCSREPORTQUEUE> reportqueues)
         {
             bool isSuccsess = true;
-            isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleManual(vhID, reportqueues);
+            //isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleManual(vhID, reportqueues);
             return isSuccsess;
         }
         public bool newReportCarrierInstalled(string vhID, string carrierID, string location, List<AMCSREPORTQUEUE> reportqueues)
