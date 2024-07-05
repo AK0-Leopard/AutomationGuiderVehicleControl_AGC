@@ -1448,6 +1448,7 @@ namespace com.mirle.ibg3k0.sc.Service
                         #endregion normal transfer
 
                     }
+                    RefreshVTransferCmdInfoList(un_finish_trnasfer);
                 }
                 catch (Exception ex)
                 {
@@ -1458,6 +1459,79 @@ namespace com.mirle.ibg3k0.sc.Service
                     System.Threading.Interlocked.Exchange(ref syncTranCmdPoint, 0);
                 }
             }
+        }
+        const int TRANSFER_CMD_KEEP_TIME_ms = 20_000;
+        private void RefreshVTransferCmdInfoList(List<VTRANSFER> currentExcuteMCSCmd)
+        {
+            try
+            {
+                bool has_change = false;
+                List<string> new_current_excute_mcs_cmd = currentExcuteMCSCmd.Select(cmd => SCUtility.Trim(cmd.ID, true)).ToList();
+                List<string> old_current_excute_mcs_cmd = VTRANSFER.VTransferInfoList.Keys.ToList();
+
+                List<string> new_add_mcs_cmds = new_current_excute_mcs_cmd.Except(old_current_excute_mcs_cmd).ToList();
+                //1.新增多出來的命令
+                foreach (string new_cmd in new_add_mcs_cmds)
+                {
+                    var current_cmd = currentExcuteMCSCmd.Where(cmd => SCUtility.isMatche(cmd.ID, new_cmd)).FirstOrDefault();
+                    if (current_cmd == null) continue;
+                    VTRANSFER new_cmd_obj = new VTRANSFER();
+                    new_cmd_obj.Put(current_cmd);
+                    VTRANSFER.VTransferInfoList.TryAdd(new_cmd, new_cmd_obj);
+                    has_change = true;
+                }
+                //2.刪除以結束的命令
+                List<string> will_del_mcs_cmds = old_current_excute_mcs_cmd.Except(new_current_excute_mcs_cmd).ToList();
+                foreach (string old_cmd in will_del_mcs_cmds)
+                {
+                    bool is_exist = VTRANSFER.VTransferInfoList.TryGetValue(old_cmd, out VTRANSFER cmd_mcs);
+                    if (is_exist)
+                    {
+                        cmd_mcs.TRANSFERSTATE = E_TRAN_STATUS.Complete;
+                        //幫忙保留結束的命令，車子發生Alarm的時候，可以查詢到對應的紀錄
+                        if (isVTransferCommandCountersownKeepTimeOver(cmd_mcs))
+                        {
+                            VTRANSFER.VTransferInfoList.TryRemove(old_cmd, out var _);
+                            has_change = true;
+                        }
+                    }
+                }
+                //3.更新現有命令
+                foreach (var mcs_cmd_item in VTRANSFER.VTransferInfoList)
+                {
+                    string cmd_mcs_id = mcs_cmd_item.Key;
+                    VTRANSFER cmd_mcs = currentExcuteMCSCmd.Where(cmd => SCUtility.isMatche(cmd.ID, cmd_mcs_id)).FirstOrDefault();
+                    if (cmd_mcs == null)
+                    {
+                        continue;
+                    }
+                    has_change |= mcs_cmd_item.Value.Put(cmd_mcs);
+                }
+            }
+            catch (Exception ex)
+            {
+                NLog.LogManager.GetCurrentClassLogger().Error(ex, "Exception");
+            }
+        }
+        private bool isVTransferCommandCountersownKeepTimeOver(VTRANSFER vTran)
+        {
+            if (vTran.CountersownKeepTime == null)
+            {
+                vTran.CountersownKeepTime = new System.Diagnostics.Stopwatch();
+                vTran.CountersownKeepTime.Restart();
+                return false;
+            }
+            if (!vTran.CountersownKeepTime.IsRunning)
+            {
+                vTran.CountersownKeepTime.Restart();
+                return false;
+            }
+            if (vTran.CountersownKeepTime.ElapsedMilliseconds > TRANSFER_CMD_KEEP_TIME_ms)
+            {
+                vTran.CountersownKeepTime.Reset();
+                return true;
+            }
+            return false;
         }
         private bool hasSetChargeAdr(AVEHICLE vh)
         {

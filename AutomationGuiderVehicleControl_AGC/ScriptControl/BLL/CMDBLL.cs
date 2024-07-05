@@ -180,6 +180,7 @@ namespace com.mirle.ibg3k0.sc.BLL
             {
                 ATRANSFER cmd = cmd_mcsDao.getByID(con, cmd_id);
                 cmd.TRANSFERSTATE = E_TRAN_STATUS.Queue;
+                cmd.COMMANDSTATE = 0;
                 cmd_mcsDao.update(con, cmd);
             }
             return isSuccess;
@@ -1657,7 +1658,7 @@ namespace com.mirle.ibg3k0.sc.BLL
 
         public ACMD getExcuteCMDBySourcePort(string sourcePort)
         {
-            ACMD cmd = null; 
+            ACMD cmd = null;
             using (DBConnection_EF con = DBConnection_EF.GetUContext())
             {
                 cmd = cmd_ohtcDAO.getSourcePortExcuteCMD(con, sourcePort);

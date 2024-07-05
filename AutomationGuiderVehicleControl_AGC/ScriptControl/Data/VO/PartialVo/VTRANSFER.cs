@@ -8,7 +8,9 @@ using com.mirle.ibg3k0.sc.Data.VO;
 using com.mirle.ibg3k0.sc.Data.VO.Interface;
 using com.mirle.ibg3k0.sc.ObjectRelay;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,7 +19,29 @@ namespace com.mirle.ibg3k0.sc
 {
     public partial class VTRANSFER
     {
+        public const int MAX_ASSIGNED_TRANSFER_RETURN_TO_QUEUE_TIMES = 3;
 
+        public static ConcurrentDictionary<string, VTRANSFER> VTransferInfoList { get; private set; } = new ConcurrentDictionary<string, VTRANSFER>();
+        public Stopwatch CountersownKeepTime;
+        public int ReturnToQueueTimes { get; private set; } = 0;
+        public static (bool isSuccess, VTRANSFER tranCmd) tryGetTransferByID(string id)
+        {
+            bool is_get = VTransferInfoList.TryGetValue(SCUtility.Trim(id, true), out var tran);
+            return (is_get, tran);
+        }
+
+        public static int GetReturnToQueueTimes(string cmd_id)
+        {
+            if (VTransferInfoList.TryGetValue(cmd_id, out VTRANSFER tran_cmd))
+            {
+                return tran_cmd.ReturnToQueueTimes;
+            }
+            return 0;
+        }
+        public void IncrementReturnToQueueTimes()
+        {
+            ReturnToQueueTimes++;
+        }
         public ACMD ConvertToCmd(BLL.PortStationBLL portStationBLL, BLL.SequenceBLL sequenceBLL, AVEHICLE assignVehicle)
         {
             var source_port_station = portStationBLL.OperateCatch.getPortStation(this.HOSTSOURCE);
@@ -275,6 +299,139 @@ namespace com.mirle.ibg3k0.sc
             return (true, sub_dest_port_id);
         }
 
+        internal bool Put(VTRANSFER current_cmd)
+        {
+            SCUtility.TrimAllParameter(current_cmd);
+            bool is_change = false;
+            if (!SCUtility.isMatche(ID, current_cmd.ID))
+            {
+                ID = current_cmd.ID;
+                is_change = true;
+            }
+            if (!SCUtility.isMatche(LOT_ID, current_cmd.LOT_ID))
+            {
+                LOT_ID = current_cmd.LOT_ID;
+                is_change = true;
+            }
+            if (!SCUtility.isMatche(CARRIER_ID, current_cmd.CARRIER_ID))
+            {
+                CARRIER_ID = current_cmd.CARRIER_ID;
+                is_change = true;
+            }
+            if (TRANSFERSTATE != current_cmd.TRANSFERSTATE)
+            {
+                TRANSFERSTATE = current_cmd.TRANSFERSTATE;
+                is_change = true;
+            }
+            if (COMMANDSTATE != current_cmd.COMMANDSTATE)
+            {
+                COMMANDSTATE = current_cmd.COMMANDSTATE;
+                is_change = true;
+            }
+            if (!SCUtility.isMatche(HOSTSOURCE, current_cmd.HOSTSOURCE))
+            {
+                HOSTSOURCE = current_cmd.HOSTSOURCE;
+                is_change = true;
+            }
+            if (!SCUtility.isMatche(HOSTDESTINATION, current_cmd.HOSTDESTINATION))
+            {
+                HOSTDESTINATION = current_cmd.HOSTDESTINATION;
+                is_change = true;
+            }
+            if (PRIORITY != current_cmd.PRIORITY)
+            {
+                PRIORITY = current_cmd.PRIORITY;
+                is_change = true;
+            }
+            if (CHECKCODE != current_cmd.CHECKCODE)
+            {
+                CHECKCODE = current_cmd.CHECKCODE;
+                is_change = true;
+            }
+            if (CMD_INSER_TIME != current_cmd.CMD_INSER_TIME)
+            {
+                CMD_INSER_TIME = current_cmd.CMD_INSER_TIME;
+                is_change = true;
+            }
+            if (CMD_START_TIME != current_cmd.CMD_START_TIME)
+            {
+                CMD_START_TIME = current_cmd.CMD_START_TIME;
+                is_change = true;
+            }
+            if (CMD_FINISH_TIME != current_cmd.CMD_FINISH_TIME)
+            {
+                CMD_FINISH_TIME = current_cmd.CMD_FINISH_TIME;
+                is_change = true;
+            }
+            if (TIME_PRIORITY != current_cmd.TIME_PRIORITY)
+            {
+                TIME_PRIORITY = current_cmd.TIME_PRIORITY;
+                is_change = true;
+            }
+            if (PORT_PRIORITY != current_cmd.PORT_PRIORITY)
+            {
+                PORT_PRIORITY = current_cmd.PORT_PRIORITY;
+                is_change = true;
+            }
+            if (REPLACE != current_cmd.REPLACE)
+            {
+                REPLACE = current_cmd.REPLACE;
+                is_change = true;
+            }
+            if (PRIORITY_SUM != current_cmd.PRIORITY_SUM)
+            {
+                PRIORITY_SUM = current_cmd.PRIORITY_SUM;
+                is_change = true;
+            }
+            if (RESULT_CODE != current_cmd.RESULT_CODE)
+            {
+                RESULT_CODE = current_cmd.RESULT_CODE;
+                is_change = true;
+            }
+            if (!SCUtility.isMatche(EXCUTE_CMD_ID, current_cmd.EXCUTE_CMD_ID))
+            {
+                EXCUTE_CMD_ID = current_cmd.EXCUTE_CMD_ID;
+                is_change = true;
+            }
+            if (CARRIER_INSER_TIME != current_cmd.CARRIER_INSER_TIME)
+            {
+                CARRIER_INSER_TIME = current_cmd.CARRIER_INSER_TIME;
+                is_change = true;
+            }
+            if (!SCUtility.isMatche(CARRIER_LOCATION, current_cmd.CARRIER_LOCATION))
+            {
+                CARRIER_LOCATION = current_cmd.CARRIER_LOCATION;
+                is_change = true;
+            }
+            if (CARRIER_INSTALLED_TIME != current_cmd.CARRIER_INSTALLED_TIME)
+            {
+                CARRIER_INSTALLED_TIME = current_cmd.CARRIER_INSTALLED_TIME;
+                is_change = true;
+            }
+            if (CARRIER_READ_STATUS != current_cmd.CARRIER_READ_STATUS)
+            {
+                CARRIER_READ_STATUS = current_cmd.CARRIER_READ_STATUS;
+                is_change = true;
+            }
+            if (VH_ID != current_cmd.VH_ID &&
+                !SCUtility.isMatche(VH_ID, current_cmd.VH_ID))
+            {
+                VH_ID = current_cmd.VH_ID;
+                is_change = true;
+            }
+            if (COMPLETE_STATUS != current_cmd.COMPLETE_STATUS)
+            {
+                COMPLETE_STATUS = current_cmd.COMPLETE_STATUS;
+                is_change = true;
+            }
+            if (!SCUtility.isMatche(PAUSEFLAG, current_cmd.PAUSEFLAG))
+            {
+                PAUSEFLAG = current_cmd.PAUSEFLAG;
+                is_change = true;
+            }
+
+            return is_change;
+        }
     }
 
 }

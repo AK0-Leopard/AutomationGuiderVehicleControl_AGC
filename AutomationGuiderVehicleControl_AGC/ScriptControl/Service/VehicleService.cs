@@ -23,6 +23,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.ServiceModel.PeerResolvers;
 using System.Threading;
 using System.Threading.Tasks;
@@ -2511,6 +2512,10 @@ namespace com.mirle.ibg3k0.sc.Service
                         bool isTransfer = !SCUtility.isEmpty(finish_fransfer_cmd_id);
                         if (isTransfer)
                         {
+                            if (DetermineTransferReturnToQueue(vh_id, finish_fransfer_cmd_id))
+                            {
+                                return (true, finish_fransfer_cmd_id);
+                            }
                             scApp.CarrierBLL.db.updateState(initial_cmd.CARRIER_ID, E_CARRIER_STATE.MoveError);
                             scApp.TransferService.FinishTransferCommand(finish_fransfer_cmd_id, CompleteStatus.CommandInitailFail);
                         }
@@ -2552,6 +2557,10 @@ namespace com.mirle.ibg3k0.sc.Service
                             //if (scApp.PortStationBLL.OperateCatch.IsEqPort(scApp.EqptBLL, cmd.DESTINATION_PORT))
                             //scApp.ReportBLL.newReportUnloadComplete(cmd.TRANSFER_ID, null);
 
+                            if (DetermineTransferReturnToQueue(vh_id, finish_fransfer_cmd_id, completeStatus))
+                            {
+                                return (true, finish_fransfer_cmd_id);
+                            }
                             is_success = is_success && scApp.CMDBLL.updateCMD_MCS_TranStatus2Complete(finish_fransfer_cmd_id, completeStatus);
                             is_success = is_success && scApp.ReportBLL.ReportTransferResult2MCS(finish_fransfer_cmd_id, completeStatus);
                             is_success = is_success && scApp.SysExcuteQualityBLL.SysExecQityfinish(finish_fransfer_cmd_id, completeStatus, totalTravelDis);
@@ -2583,6 +2592,44 @@ namespace com.mirle.ibg3k0.sc.Service
                 }
 
                 return (is_success, finish_fransfer_cmd_id);
+            }
+
+            private bool DetermineTransferReturnToQueue(string vh_id, string finish_fransfer_cmd_id, CompleteStatus? completeStatus = null, [CallerMemberName] string Method = "")
+            {
+                var check_result = IsNeedReturnToQueue(finish_fransfer_cmd_id, completeStatus);
+                if (check_result.isNeed)
+                {
+                    LogHelper.Log(logger: logger, LogLevel: LogLevel.Debug, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                       Data: $"start process transfer command return to queue. cmd id:{finish_fransfer_cmd_id},source function:{Method}",
+                       VehicleID: vh_id);
+                    scApp.CMDBLL.updateCMD_MCS_TranStatus2Queue(finish_fransfer_cmd_id);
+                    check_result.tran.IncrementReturnToQueueTimes();
+                    return true;
+                }
+                return false;
+            }
+
+            private (bool isNeed, VTRANSFER tran) IsNeedReturnToQueue(string finishFransferCmdID, CompleteStatus? completeStatus = null)
+            {
+                if (completeStatus.HasValue &&
+                    completeStatus.Value != CompleteStatus.VehicleAbort)
+                    return (false, null);
+                VTRANSFER tran = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(finishFransferCmdID);
+                if (tran == null)
+                    return (false, null);
+                if (tran.isLoading || tran.isUnloading)
+                {
+                    return (false, null);
+                }
+
+                var get_result = VTRANSFER.tryGetTransferByID(finishFransferCmdID);
+                if (!get_result.isSuccess)
+                {
+                    return (false, null);
+                }
+                if (get_result.tranCmd.ReturnToQueueTimes >= VTRANSFER.MAX_ASSIGNED_TRANSFER_RETURN_TO_QUEUE_TIMES)
+                    return (false, null);
+                return (true, get_result.tranCmd);
             }
 
             private void tryRemoveFinishTransferInCurrentCache(string finish_fransfer_cmd_id)
