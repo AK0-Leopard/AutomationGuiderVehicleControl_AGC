@@ -23,6 +23,7 @@ using com.mirle.ibg3k0.sc.Data.VO;
 using NLog;
 using com.mirle.ibg3k0.sc.Data;
 using System.Transactions;
+using com.mirle.ibg3k0.sc.Common;
 
 namespace com.mirle.ibg3k0.sc.BLL
 {
@@ -63,12 +64,19 @@ namespace com.mirle.ibg3k0.sc.BLL
         }
 
 
-        public string getCommandID(SCAppConstants.GenOHxCCommandType gen_cmd_type)
+        public string getCommandID(SCAppConstants.GenOHxCCommandType gen_cmd_type, string transferID)
         {
             string command_id = string.Empty;
-            long newCommandNum = getCommandID_Manual_Number();
+            string s_newCommandNum = getCommandID_Manual_Number().ToString("0000");
             string sGen_cmd_type = ((int)gen_cmd_type).ToString();
-            command_id = ((int)gen_cmd_type) + DateTime.Today.ToString(SCAppConstants.TimestampFormat_08) + newCommandNum.ToString("0000");
+            if (SCUtility.isEmpty(transferID))
+            {
+                command_id = ((int)gen_cmd_type) + DateTime.Today.ToString(SCAppConstants.TimestampFormat_08) + s_newCommandNum;
+            }
+            else
+            {
+                command_id = $"{SCUtility.Trim(transferID)}_{s_newCommandNum}";
+            }
             return command_id;
         }
         /// <summary>

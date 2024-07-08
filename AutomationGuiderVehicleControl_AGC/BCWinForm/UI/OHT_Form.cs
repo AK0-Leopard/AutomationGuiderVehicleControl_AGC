@@ -352,7 +352,7 @@ namespace com.mirle.ibg3k0.bc.winform.UI
                 case E_CMD_TYPE.Load: scApp.VehicleService.Command.Load(vehicleId, cst_id, source_info.adrID, source_info.portID); break;
                 case E_CMD_TYPE.Unload: scApp.VehicleService.Command.Unload(vehicleId, cst_id, dest_info.adrID, dest_info.portID); break;
                 case E_CMD_TYPE.Home:
-                    string cmdID = scApp.SequenceBLL.getCommandID(SCAppConstants.GenOHxCCommandType.Manual);
+                    string cmdID = scApp.SequenceBLL.getCommandID(SCAppConstants.GenOHxCCommandType.Manual, "");
                     scApp.VehicleService.Send.CommandHome(vehicleId, cmdID);
                     break;
             }
@@ -386,7 +386,7 @@ namespace com.mirle.ibg3k0.bc.winform.UI
                     case E_CMD_TYPE.Load: scApp.VehicleService.Command.Load(vehicleId, cst_id, source_info.adrID, source_info.portID); break;
                     case E_CMD_TYPE.Unload: scApp.VehicleService.Command.Unload(vehicleId, cst_id, dest_info.adrID, dest_info.portID); break;
                     case E_CMD_TYPE.Home:
-                        string cmdID = scApp.SequenceBLL.getCommandID(SCAppConstants.GenOHxCCommandType.Manual);
+                        string cmdID = scApp.SequenceBLL.getCommandID(SCAppConstants.GenOHxCCommandType.Manual, "");
                         scApp.VehicleService.Send.CommandHome(vehicleId, cmdID);
                         break;
                 }

@@ -957,7 +957,7 @@ namespace com.mirle.ibg3k0.bc.winform.UI
                 return;
             }
 
-            string cmd_id = scApp.SequenceBLL.getCommandID(sc.App.SCAppConstants.GenOHxCCommandType.Debug);
+            //string cmd_id = scApp.SequenceBLL.getCommandID(sc.App.SCAppConstants.GenOHxCCommandType.Debug);
             string cst_id = txt_cst_id.Text;
             string from_adr = cb_startFromTo_From_AdrToAdrToAdr.Text;
             string to_adr = cb_startFromTo_To_AdrToAdrToAdr.Text;

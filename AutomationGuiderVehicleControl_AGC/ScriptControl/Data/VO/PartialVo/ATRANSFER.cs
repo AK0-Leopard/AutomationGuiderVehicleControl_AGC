@@ -93,7 +93,7 @@ namespace com.mirle.ibg3k0.sc
             string to_adr = desc_port_station == null ? string.Empty : desc_port_station.ADR_ID;
             return new ACMD()
             {
-                ID = sequenceBLL.getCommandID(SCAppConstants.GenOHxCCommandType.Auto),
+                ID = sequenceBLL.getCommandID(SCAppConstants.GenOHxCCommandType.Auto, this.ID),
                 TRANSFER_ID = this.ID,
                 VH_ID = assignVehicle.VEHICLE_ID,
                 CARRIER_ID = this.CARRIER_ID,

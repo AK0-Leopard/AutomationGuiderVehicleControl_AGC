@@ -1079,7 +1079,7 @@ namespace com.mirle.ibg3k0.sc.BLL
             string commandID = string.Empty;
             if (is_generate_cmd_id)
             {
-                commandID = scApp.SequenceBLL.getCommandID(gen_cmd_type);
+                commandID = scApp.SequenceBLL.getCommandID(gen_cmd_type, cmd_id_mcs);
             }
             if (cmd_type == E_CMD_TYPE.LoadUnload
                 || cmd_type == E_CMD_TYPE.Load)
