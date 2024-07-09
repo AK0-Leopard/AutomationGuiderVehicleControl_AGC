@@ -94,6 +94,9 @@ namespace com.mirle.ibg3k0.sc.Service
                 bool isTransferCmd = !SCUtility.isEmpty(cmd.TRANSFER_ID);
                 try
                 {
+                    VTRANSFER v_tran = null;
+                    if (isTransferCmd)
+                        v_tran = scApp.TransferBLL.db.vTransfer.GetVTransferByTransferID(cmd.TRANSFER_ID);
                     //if (isTransferCmd)
                     //{
                     //    reportBLL.newReportTransferInitial(cmd.TRANSFER_ID, null);
@@ -108,7 +111,10 @@ namespace com.mirle.ibg3k0.sc.Service
                         if (isTransferCmd)
                         {
                             isSuccess &= transferBLL.db.transfer.updateTranStatus2InitialAndExcuteCmdID(cmd.TRANSFER_ID, cmd.ID);
-                            isSuccess &= reportBLL.newReportBeginTransfer(cmd.TRANSFER_ID, reportqueues);
+                            if (!IsTranInitialReady(v_tran))
+                            {
+                                isSuccess &= reportBLL.newReportBeginTransfer(cmd.TRANSFER_ID, reportqueues);
+                            }
                             reportBLL.insertMCSReport(reportqueues);
                         }
 
@@ -126,7 +132,8 @@ namespace com.mirle.ibg3k0.sc.Service
                     }
                     if (isSuccess)
                     {
-                        if (isTransferCmd)
+                        if (isTransferCmd &&
+                            !IsTranInitialReady(v_tran))
                         {
                             reportBLL.newReportTransferInitial(cmd.TRANSFER_ID, null);
                         }
@@ -148,6 +155,12 @@ namespace com.mirle.ibg3k0.sc.Service
                     isSuccess = false;
                 }
                 return isSuccess;
+            }
+            private bool IsTranInitialReady(VTRANSFER vTran)
+            {
+                if (vTran == null)
+                    return false;
+                return vTran.IsInitialReady;
             }
             private bool sendMessage_ID_31_TRANS_REQUEST(string vhID, string cmd_id, CommandActionType activeType, string cst_id,
                                                          string fromAdr, string destAdr,

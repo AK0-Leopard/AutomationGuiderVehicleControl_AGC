@@ -1331,7 +1331,7 @@ namespace com.mirle.ibg3k0.sc.Service
                                     else
                                     {
                                         LogHelper.Log(logger: logger, LogLevel: LogLevel.Warn, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
-                                           Data: $"接收到Command ID:{first_waitting_excute_mcs_cmd.ID}，要求AGV:{ vh.VEHICLE_ID}前往充電站，但沒找到該AGV設定的充電位置",
+                                           Data: $"接收到Command ID:{first_waitting_excute_mcs_cmd.ID}，要求AGV:{vh.VEHICLE_ID}前往充電站，但沒找到該AGV設定的充電位置",
                                            VehicleID: vh.VEHICLE_ID);
                                     }
                                     continue;
@@ -1343,9 +1343,12 @@ namespace com.mirle.ibg3k0.sc.Service
                                 AVEHICLE bestSuitableVh = null;
                                 E_VH_TYPE vh_type = E_VH_TYPE.None;
 
-                                if (first_waitting_excute_mcs_cmd.IsOnVh(scApp.VehicleBLL))
+                                var check_carrier_loc_in_on_vh = first_waitting_excute_mcs_cmd.IsOnVh(scApp.VehicleBLL);
+                                //if (first_waitting_excute_mcs_cmd.IsOnVh(scApp.VehicleBLL))
+                                if (check_carrier_loc_in_on_vh.isVh)
                                 {
-                                    bestSuitableVh = scApp.VehicleBLL.cache.getVehicleByLocationRealID(hostsource);
+                                    first_waitting_excute_mcs_cmd.HOSTSOURCE = check_carrier_loc_in_on_vh.vh.Real_ID;
+                                    bestSuitableVh = check_carrier_loc_in_on_vh.vh;
                                     if (bestSuitableVh.IsError ||
                                         bestSuitableVh.MODE_STATUS != VHModeStatus.AutoRemote)
                                     {

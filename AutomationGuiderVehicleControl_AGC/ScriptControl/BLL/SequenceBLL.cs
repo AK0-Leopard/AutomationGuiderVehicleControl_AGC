@@ -75,7 +75,7 @@ namespace com.mirle.ibg3k0.sc.BLL
             }
             else
             {
-                command_id = $"{SCUtility.Trim(transferID)}_{s_newCommandNum}";
+                command_id = $"{SCUtility.Trim(transferID)}{s_newCommandNum}";
             }
             return command_id;
         }

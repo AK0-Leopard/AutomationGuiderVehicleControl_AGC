@@ -3,6 +3,7 @@ using com.mirle.ibg3k0.bcf.Common;
 using com.mirle.ibg3k0.bcf.Data.ValueDefMapAction;
 using com.mirle.ibg3k0.bcf.Data.VO;
 using com.mirle.ibg3k0.sc.App;
+using com.mirle.ibg3k0.sc.BLL;
 using com.mirle.ibg3k0.sc.Common;
 using com.mirle.ibg3k0.sc.Data.VO;
 using com.mirle.ibg3k0.sc.Data.VO.Interface;
@@ -11,6 +12,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing.Text;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -237,11 +239,43 @@ namespace com.mirle.ibg3k0.sc
                 return COMMANDSTATE == ATRANSFER.COMMAND_STATUS_BIT_INDEX_UNLOADING;
             }
         }
-        public bool IsOnVh(BLL.VehicleBLL vehicleBLL)
+        public bool IsInitialReady
         {
-            var vh_obj = vehicleBLL.cache.getVehicleByRealID(SCUtility.Trim(HOSTSOURCE, true));
-            return vh_obj != null;
+            get
+            {
+                return COMMANDSTATE >= ATRANSFER.COMMAND_STATUS_BIT_INDEX_ENROUTE;
+            }
         }
+
+
+        //public bool IsOnVh(BLL.VehicleBLL vehicleBLL)
+        //{
+        //    var vh_obj = vehicleBLL.cache.getVehicleByRealID(SCUtility.Trim(HOSTSOURCE, true));
+        //    return vh_obj != null;
+        //}
+        public (bool isVh, AVEHICLE vh) IsOnVh(BLL.VehicleBLL vehicleBLL)
+        {
+            var check_on_vh = IsLocationVh(vehicleBLL);
+            if (check_on_vh.isVh)
+            {
+                return (check_on_vh.isVh, check_on_vh.vh);
+            }
+            return (false, null);
+            //var vh_obj = vehicleBLL.cache.getVehicleByRealID(SCUtility.Trim(HOSTSOURCE, true));
+            //return vh_obj != null;
+        }
+        private (bool isVh, AVEHICLE vh) IsLocationVh(VehicleBLL vehicleBLL)
+        {
+            string loc_id = SCUtility.Trim(this.CARRIER_LOCATION, true);
+            AVEHICLE vh = vehicleBLL.cache.getVehicleByRealID(loc_id);
+            if (vh != null)
+                return (true, vh);
+            vh = vehicleBLL.cache.getVehicleByLocationRealID(loc_id);
+            if (vh != null)
+                return (true, vh);
+            return (false, null);
+        }
+
 
 
         public override string ToString()

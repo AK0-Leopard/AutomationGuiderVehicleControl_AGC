@@ -6,6 +6,7 @@ using com.mirle.ibg3k0.sc.Data.DAO;
 using com.mirle.ibg3k0.sc.Data.SECS;
 using com.mirle.ibg3k0.sc.Data.VO;
 using com.mirle.ibg3k0.sc.ProtocolFormat.OHTMessage;
+using Nancy.Routing.Trie.Nodes;
 using NLog;
 using System;
 using System.Collections.Generic;
@@ -180,7 +181,9 @@ namespace com.mirle.ibg3k0.sc.BLL
             {
                 ATRANSFER cmd = cmd_mcsDao.getByID(con, cmd_id);
                 cmd.TRANSFERSTATE = E_TRAN_STATUS.Queue;
-                cmd.COMMANDSTATE = 0;
+                cmd.CMD_START_TIME = null;
+                cmd.EXCUTE_CMD_ID = "";
+                cmd.COMMANDSTATE = ATRANSFER.COMMAND_STATUS_BIT_INDEX_ENROUTE;
                 cmd_mcsDao.update(con, cmd);
             }
             return isSuccess;
