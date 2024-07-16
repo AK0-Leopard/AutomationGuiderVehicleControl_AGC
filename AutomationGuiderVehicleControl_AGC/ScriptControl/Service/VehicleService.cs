@@ -171,6 +171,10 @@ namespace com.mirle.ibg3k0.sc.Service
                 string reason = string.Empty;
                 ID_131_TRANS_RESPONSE receive_gpp = null;
                 AVEHICLE vh = vehicleBLL.cache.getVehicle(vhID);
+                if (activeType == CommandActionType.Unload)
+                {
+                    cst_id = TryGetCurrentVhCstID(vh, cst_id);
+                }
                 if (isSuccess)
                 {
                     ID_31_TRANS_REQUEST send_gpp = new ID_31_TRANS_REQUEST()
@@ -225,6 +229,20 @@ namespace com.mirle.ibg3k0.sc.Service
                     StatusRequest(vhID, true);
                 }
                 return isSuccess;
+            }
+            private string TryGetCurrentVhCstID(AVEHICLE vh, string cmdCSTID)
+            {
+                if (vh == null)
+                    return SCUtility.Trim(cmdCSTID, true);
+                if (vh.HAS_CST_L)
+                {
+                    return SCUtility.Trim(vh.CST_ID_L, true);
+                }
+                else if (vh.HAS_CST_R)
+                {
+                    return SCUtility.Trim(vh.CST_ID_R, true);
+                }
+                return SCUtility.Trim(cmdCSTID, true);
             }
             #endregion ID_31 TransferCommand
             #region ID_35 Carrier Rename
@@ -1122,7 +1140,7 @@ namespace com.mirle.ibg3k0.sc.Service
                             return;
                         }
                     }
-                    scApp.ReportBLL.newSendMCSMessage(reportqueues);
+                    Task.Run(() => scApp.ReportBLL.newSendMCSMessage(reportqueues));
                     scApp.SysExcuteQualityBLL.updateSysExecQity_ArrivalSourcePort(cmd.TRANSFER_ID);
                 }
                 else
@@ -1202,7 +1220,7 @@ namespace com.mirle.ibg3k0.sc.Service
                             return;
                         }
                     }
-                    scApp.ReportBLL.newSendMCSMessage(reportqueues);
+                    Task.Run(() => scApp.ReportBLL.newSendMCSMessage(reportqueues));
                 }
                 else
                 {
@@ -1504,7 +1522,7 @@ namespace com.mirle.ibg3k0.sc.Service
                             return;
                         }
                     }
-                    scApp.ReportBLL.newSendMCSMessage(reportqueues);
+                    Task.Run(() => scApp.ReportBLL.newSendMCSMessage(reportqueues));
                     scApp.SysExcuteQualityBLL.updateSysExecQity_ArrivalDestnPort(cmd.TRANSFER_ID);
                 }
                 else
@@ -1609,7 +1627,7 @@ namespace com.mirle.ibg3k0.sc.Service
                                 return;
                             }
                             scApp.ReportBLL.insertMCSReport(reportqueues);
-                            scApp.ReportBLL.newSendMCSMessage(reportqueues);
+                            Task.Run(() => scApp.ReportBLL.newSendMCSMessage(reportqueues));
                         }
                         //如果是swap的vh 他在放置貨物位置將會是虛擬port，需要看最後車子上報的位置來決定更新到哪邊
                         if (vh.VEHICLE_TYPE == E_VH_TYPE.Swap)
