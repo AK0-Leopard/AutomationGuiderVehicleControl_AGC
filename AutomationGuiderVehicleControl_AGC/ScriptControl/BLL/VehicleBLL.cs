@@ -1163,6 +1163,19 @@ namespace com.mirle.ibg3k0.sc.BLL
                 }
                 foreach (AVEHICLE vh in vhs.ToList())
                 {
+                    if (vh.IsInitialing)
+                    {
+                        vhs.Remove(vh);
+                        LogHelper.Log(logger: logger, LogLevel: LogLevel.Debug, Class: nameof(VehicleBLL), Device: "AGVC",
+                           Data: $"vh id:{vh.VEHICLE_ID} is initialing," +
+                                 $"so filter it out",
+                           VehicleID: vh.VEHICLE_ID,
+                           CST_ID_L: vh.CST_ID_L,
+                           CST_ID_R: vh.CST_ID_R);
+                    }
+                }
+                foreach (AVEHICLE vh in vhs.ToList())
+                {
                     if (SCUtility.isEmpty(vh.CUR_ADR_ID))
                     {
                         vhs.Remove(vh);

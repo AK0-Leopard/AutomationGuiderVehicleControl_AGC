@@ -1350,11 +1350,12 @@ namespace com.mirle.ibg3k0.sc.Service
                                     first_waitting_excute_mcs_cmd.HOSTSOURCE = check_carrier_loc_in_on_vh.vh.Real_ID;
                                     bestSuitableVh = check_carrier_loc_in_on_vh.vh;
                                     if (bestSuitableVh.IsError ||
-                                        bestSuitableVh.MODE_STATUS != VHModeStatus.AutoRemote)
+                                        bestSuitableVh.MODE_STATUS != VHModeStatus.AutoRemote ||
+                                        bestSuitableVh.IsInitialing)
                                     {
                                         LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
                                            Data: $"Has transfer command:{SCUtility.Trim(first_waitting_excute_mcs_cmd.ID, true)} for vh:{bestSuitableVh.VEHICLE_ID}" +
-                                                 $"but it error happend or not auto remote.",
+                                                 $"but it error happend 、 not auto remote or initialing.",
                                            VehicleID: bestSuitableVh.VEHICLE_ID);
                                         continue;
                                     }

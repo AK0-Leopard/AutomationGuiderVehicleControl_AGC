@@ -527,6 +527,7 @@ namespace com.mirle.ibg3k0.sc
         {
             get { return HAS_CST_L && HAS_CST_R; }
         }
+        public bool IsInitialing;
 
         [JsonIgnore]
         public object PositionRefresh_Sync = new object();

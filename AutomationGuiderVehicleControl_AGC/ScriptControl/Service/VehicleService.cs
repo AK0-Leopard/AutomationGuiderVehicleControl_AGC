@@ -910,21 +910,62 @@ namespace com.mirle.ibg3k0.sc.Service
                         break;
                 }
             }
-            const string CST_ID_ERROR_SYMBOL = "ERR";
+            const string CST_ID_ERROR_SYMBOL = "UNKNOWN";
             const string CST_ID_ERROR_RENAME_SYMBOL = "UNKF";
             private void TransferReportInitial(BCFApplication bcfApp, AVEHICLE eqpt, int seq_num, EventType eventType, string cstID, AGVLocation cstLocation)
             {
                 try
                 {
-                    string location_id = eqpt.getLoctionRealID(cstLocation);
+                    eqpt.IsInitialing = true;
                     string final_cst_id = "";
                     LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
                        Data: $"Process report {eventType}",
                        VehicleID: eqpt.VEHICLE_ID,
                        CST_ID_L: eqpt.CST_ID_L);
 
+                    string rename_cst_id = "";
+                    if (SCUtility.isMatche(cstID, CST_ID_ERROR_SYMBOL))
+                    {
+                        //1.如果ID是UNKNOWN，則判斷系統內有沒有剛好在該AGV上的帳，
+                        //有的話直接將其Rename成系統知道的
+                        //沒有的話，則直接將其Rename成UNKFXXXXXXXXX，並重新建帳
+                        LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                           Data: $"Has [{CST_ID_ERROR_SYMBOL}] carrier on location:{cstLocation},start rename process...",
+                           VehicleID: eqpt.VEHICLE_ID,
+                           CST_ID_L: eqpt.CST_ID_L);
+                        string location_name = eqpt.getLoctionRealID(cstLocation);
+                        var try_get_carrier_by_location = scApp.CarrierBLL.db.hasCarrierOnVhLocation(location_name);
+                        if (try_get_carrier_by_location.has)
+                        {
+                            rename_cst_id = SCUtility.Trim(try_get_carrier_by_location.onVhCarrier.ID, true);
+                            LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                               Data: $"location:{location_name} has data on db rename it, cst id:{rename_cst_id}",
+                               VehicleID: eqpt.VEHICLE_ID,
+                               CST_ID_L: eqpt.CST_ID_L);
+                        }
+                        else
+                        {
+                            string new_carrier_id =
+                                    $"UNKF{eqpt.Real_ID}{DateTime.Now.ToString(SCAppConstants.TimestampFormat_12)}";
+                            rename_cst_id = new_carrier_id;
+                            var try_install_result = scApp.TransferService.tryInstallCarrierInVehicle(eqpt.VEHICLE_ID, eqpt.LocationRealID_L, rename_cst_id);
+                            LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                               Data: $"location:{location_name} no data on db rename it, cst id:{rename_cst_id}",
+                               VehicleID: eqpt.VEHICLE_ID,
+                               CST_ID_L: eqpt.CST_ID_L);
+                        }
+                    }
+                    else
+                    {
+                        LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
+                           Data: $"No unknow carrier on loc:{cstLocation},no process",
+                           VehicleID: eqpt.VEHICLE_ID,
+                           CST_ID_L: eqpt.CST_ID_L);
+
+                    }
+
                     scApp.ReserveBLL.RemoveAllReservedSectionsByVehicleID(eqpt.VEHICLE_ID);
-                    replyTranEventReport(bcfApp, eventType, eqpt, seq_num, "");
+                    replyTranEventReport(bcfApp, eventType, eqpt, seq_num, "", renameCarrierID: rename_cst_id);
 
                     //var excuteCmdsCheck = cmdBLL.cache.tryGetExcuteCmds(eqpt.VEHICLE_ID);
                     //bool has_cst_on_vh = !SCUtility.isEmpty(cstID);
@@ -1058,6 +1099,10 @@ namespace com.mirle.ibg3k0.sc.Service
                 catch (Exception ex)
                 {
                     logger.Error(ex, "Exception");
+                }
+                finally
+                {
+                    eqpt.IsInitialing = false;
                 }
             }
 
