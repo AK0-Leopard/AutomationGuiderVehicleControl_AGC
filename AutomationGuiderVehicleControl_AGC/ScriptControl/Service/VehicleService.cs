@@ -740,6 +740,7 @@ namespace com.mirle.ibg3k0.sc.Service
                 };
                 WrapperMessage wrapper = new WrapperMessage
                 {
+                    ID = WrapperMessage.TranCmpRespFieldNumber,
                     SeqNum = seq_num,
                     TranCmpResp = send_str
                 };
@@ -948,7 +949,7 @@ namespace com.mirle.ibg3k0.sc.Service
                             string new_carrier_id =
                                     $"UNKF{eqpt.Real_ID}{DateTime.Now.ToString(SCAppConstants.TimestampFormat_12)}";
                             rename_cst_id = new_carrier_id;
-                            var try_install_result = scApp.TransferService.tryInstallCarrierInVehicle(eqpt.VEHICLE_ID, eqpt.LocationRealID_L, rename_cst_id);
+                            var try_install_result = scApp.TransferService.tryInstallCarrierInVehicle(eqpt.VEHICLE_ID, location_name, rename_cst_id);
                             LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
                                Data: $"location:{location_name} no data on db rename it, cst id:{rename_cst_id}",
                                VehicleID: eqpt.VEHICLE_ID,
@@ -1404,8 +1405,10 @@ namespace com.mirle.ibg3k0.sc.Service
                 var carrier_location = tryFindCarrierLocationOnVehicle(vh.VEHICLE_ID, cmd.CARRIER_ID, readCarrierID);
                 if (carrier_location.isExist)
                 {
-                    scApp.CarrierBLL.db.updateLocationAndState
-                        (cmd.CARRIER_ID, carrier_location.Location.ID, E_CARRIER_STATE.Installed);
+                    //scApp.CarrierBLL.db.updateLocationAndState
+                    //    (cmd.CARRIER_ID, carrier_location.Location.ID, E_CARRIER_STATE.Installed);
+                    var try_install_result = scApp.TransferService.tryInstallCarrierInVehicle(vh.VEHICLE_ID, carrier_location.Location.ID, cmd.CARRIER_ID);
+
                 }
                 else
                 {
@@ -1415,13 +1418,15 @@ namespace com.mirle.ibg3k0.sc.Service
                     var check_has_carrier_on_location_result = scApp.CarrierBLL.db.hasCarrierOnVhLocation(location_id_l);
                     if (check_has_carrier_on_location_result.has)
                     {
-                        scApp.CarrierBLL.db.updateLocationAndState
-                            (cmd.CARRIER_ID, location_id_r, E_CARRIER_STATE.Installed);
+                        //scApp.CarrierBLL.db.updateLocationAndState
+                        //    (cmd.CARRIER_ID, location_id_r, E_CARRIER_STATE.Installed);
+                        var try_install_result = scApp.TransferService.tryInstallCarrierInVehicle(vh.VEHICLE_ID, location_id_r, cmd.CARRIER_ID);
                     }
                     else
                     {
-                        scApp.CarrierBLL.db.updateLocationAndState
-                            (cmd.CARRIER_ID, location_id_l, E_CARRIER_STATE.Installed);
+                        //scApp.CarrierBLL.db.updateLocationAndState
+                        //    (cmd.CARRIER_ID, location_id_l, E_CARRIER_STATE.Installed);
+                        var try_install_result = scApp.TransferService.tryInstallCarrierInVehicle(vh.VEHICLE_ID, location_id_l, cmd.CARRIER_ID);
                     }
 
                     //scApp.CarrierBLL.db.updateLocationAndState
@@ -2004,8 +2009,10 @@ namespace com.mirle.ibg3k0.sc.Service
                 }
                 WrapperMessage wrapper = new WrapperMessage
                 {
+                    ID = WrapperMessage.ImpTransEventRespFieldNumber,
                     SeqNum = seq_num,
                     ImpTransEventResp = send_str
+
                 };
                 Boolean resp_cmp = vh.sendMessage(wrapper, true);
                 SCUtility.RecodeReportInfo(vh.VEHICLE_ID, seq_num, send_str, resp_cmp.ToString());
@@ -2256,6 +2263,7 @@ namespace com.mirle.ibg3k0.sc.Service
                 send_str.GuideInfoList.Add(guideInfos);
                 WrapperMessage wrapper = new WrapperMessage
                 {
+                    ID = WrapperMessage.GuideInfoRespFieldNumber,
                     SeqNum = seq_num,
                     GuideInfoResp = send_str
                 };
@@ -2396,6 +2404,7 @@ namespace com.mirle.ibg3k0.sc.Service
                 };
                 WrapperMessage wrapper = new WrapperMessage
                 {
+                    ID = WrapperMessage.StatusChangeRespFieldNumber,
                     SeqNum = seq_num,
                     StatusChangeResp = send_str
                 };
@@ -2431,6 +2440,7 @@ namespace com.mirle.ibg3k0.sc.Service
                 };
                 WrapperMessage wrapper = new WrapperMessage
                 {
+                    ID = WrapperMessage.AvoidCompleteRespFieldNumber,
                     SeqNum = seq_num,
                     AvoidCompleteResp = send_str
                 };
@@ -2466,6 +2476,7 @@ namespace com.mirle.ibg3k0.sc.Service
 
                 WrapperMessage wrapper = new WrapperMessage
                 {
+                    ID = WrapperMessage.RangeTeachingCmpRespFieldNumber,
                     SeqNum = seq_num,
                     RangeTeachingCmpResp = response
                 };
@@ -2496,6 +2507,7 @@ namespace com.mirle.ibg3k0.sc.Service
                     };
                     WrapperMessage wrapper = new WrapperMessage
                     {
+                        ID = WrapperMessage.AlarmRespFieldNumber,
                         SeqNum = seq_num,
                         AlarmResp = send_str
                     };

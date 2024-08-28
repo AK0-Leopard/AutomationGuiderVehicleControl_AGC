@@ -1108,6 +1108,10 @@ namespace com.mirle.ibg3k0.sc.Service
                     {
                         return (false, $"Location:{vhLocation} is already carrier:{check_has_carrier_on_location_result.onVhCarrier.ID} exist.");
                     }
+                    else
+                    {
+                        ForceRemoveCarrierInVehicleByOP(check_has_carrier_on_location_result.onVhCarrier.ID);
+                    }
                 }
                 ACARRIER carrier = new ACARRIER()
                 {
