@@ -1,5 +1,7 @@
 ﻿using com.mirle.ibg3k0.bcf.Common;
 using com.mirle.ibg3k0.sc;
+using com.mirle.ibg3k0.sc.App;
+using com.mirle.ibg3k0.sc.Common;
 using com.mirle.ibg3k0.sc.ProtocolFormat.OHTMessage;
 using System;
 using System.Collections.Generic;
@@ -82,9 +84,9 @@ namespace com.mirle.ibg3k0.sc.ObjectRelay
         public HCMD_MCSObjToShow()
         {
         }
-        public string ID { get { return cmd_mcs.ID; } }
-        public string CARRIER_ID { get { return cmd_mcs.CARRIER_ID; } }
-        public string LOT_ID { get { return cmd_mcs.LOT_ID; } }
+        public string ID { get { return SCUtility.Trim(cmd_mcs.ID, true); } }
+        public string CARRIER_ID { get { return SCUtility.Trim(cmd_mcs.CARRIER_ID, true); } }
+        //public string LOT_ID { get { return cmd_mcs.LOT_ID; } }
         public E_TRAN_STATUS TRANSFERSTATE { get { return cmd_mcs.TRANSFERSTATE; } }
         public string HOSTSOURCE
         {
@@ -112,10 +114,24 @@ namespace com.mirle.ibg3k0.sc.ObjectRelay
                 return priority;
             }
         }
-        public System.DateTime CMD_INSER_TIME { get { return cmd_mcs.CMD_INSER_TIME; } }
-        public Nullable<System.DateTime> CMD_START_TIME { get { return cmd_mcs.CMD_START_TIME; } }
-        public Nullable<System.DateTime> CMD_FINISH_TIME { get { return cmd_mcs.CMD_FINISH_TIME; } }
-        public int REPLACE { get { return cmd_mcs.REPLACE; } }
+        public string CMD_INSER_TIME { get { return cmd_mcs.CMD_INSER_TIME.ToString(SCAppConstants.DateTimeFormat_23); } }
+        public string CMD_START_TIME
+        {
+            get
+            {
+                return cmd_mcs.CMD_START_TIME.HasValue ?
+                       cmd_mcs.CMD_START_TIME.Value.ToString(SCAppConstants.DateTimeFormat_23) : "";
+            }
+        }
+        public string CMD_FINISH_TIME
+        {
+            get
+            {
+                return cmd_mcs.CMD_FINISH_TIME.HasValue ?
+                       cmd_mcs.CMD_FINISH_TIME.Value.ToString(SCAppConstants.DateTimeFormat_23) : "";
+            }
+        }
+        //public int REPLACE { get { return cmd_mcs.REPLACE; } }
 
     }
 }

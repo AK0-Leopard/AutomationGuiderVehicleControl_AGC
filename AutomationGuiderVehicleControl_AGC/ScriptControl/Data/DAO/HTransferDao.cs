@@ -25,12 +25,12 @@ namespace com.mirle.ibg3k0.sc.Data.DAO
                         select new ObjectRelay.HCMD_MCSObjToShow() { cmd_mcs = cmd };
             return query.ToList();
         }
-        public List<HTRANSFER> loadByInsertTimeEndTime(DBConnection_EF con, DateTime insertTime, DateTime finishTime)
+        public List<ObjectRelay.HCMD_MCSObjToShow> loadByInsertTimeEndTime(DBConnection_EF con, DateTime insertTime, DateTime finishTime)
         {
             var query = from cmd in con.HTRANSFER
                         where cmd.CMD_START_TIME > insertTime && (cmd.CMD_FINISH_TIME != null && cmd.CMD_FINISH_TIME < finishTime)
                         orderby cmd.CMD_START_TIME descending
-                        select cmd;
+                        select new ObjectRelay.HCMD_MCSObjToShow() { cmd_mcs = cmd };
             return query.ToList();
         }
 

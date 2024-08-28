@@ -1045,6 +1045,7 @@
       <DependentUpon>OHTCContext.edmx</DependentUpon>
     </None>
     <None Include="packages.config" />
+    <None Include="Properties\DataSources\HTRANSFER.datasource" />
     <None Include="ProtocolFormat\ohtmessage.proto" />
     <None Include="ProtocolFormat\SystemClass\PortInfo.proto" />
   </ItemGroup>

@@ -235,6 +235,16 @@ namespace com.mirle.ibg3k0.sc.BLL
                 {
                     htranDao = scApp.HTransferDao;
                 }
+                public List<ObjectRelay.HCMD_MCSObjToShow> loadHTrnasfer(DateTime insertTime, DateTime finishTime)
+                {
+                    List<ObjectRelay.HCMD_MCSObjToShow> hcmds = null;
+                    using (DBConnection_EF con = DBConnection_EF.GetUContext())
+                    {
+                        hcmds = htranDao.loadByInsertTimeEndTime(con, insertTime, finishTime);
+                    }
+                    return hcmds;
+                }
+
             }
         }
 

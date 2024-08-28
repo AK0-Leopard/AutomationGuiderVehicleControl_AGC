@@ -189,7 +189,7 @@ namespace com.mirle.ibg3k0.bc.winform
                     XID = args.XID
                 };
                 ci.addMPCTipMsg(tipMsg);
-                popUpMPCTipMessageDialog();
+                popUpMPCTipMessageDialog(true);
             }), null);
         }
 
@@ -1058,8 +1058,7 @@ namespace com.mirle.ibg3k0.bc.winform
 
         private void transferCommandHistoryToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            openForm(typeof(HistoryTransferCommandQureyListForm).Name, true, false);
-
+            openForm(typeof(HistoryTransferForm).Name, true, false);
         }
 
         private void alarmToolStripMenuItem_Click(object sender, EventArgs e)
