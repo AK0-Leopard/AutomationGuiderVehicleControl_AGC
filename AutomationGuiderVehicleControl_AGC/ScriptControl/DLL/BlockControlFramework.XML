@@ -3750,7 +3750,7 @@
             </summary>
             <value>The zone configuration list.</value>
         </member>
-        <member name="M:com.mirle.ibg3k0.bcf.ConfigHandler.LineConfigSection.#ctor(System.String,System.String,System.String,System.String,System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.ZoneConfigSection})">
+        <member name="M:com.mirle.ibg3k0.bcf.ConfigHandler.LineConfigSection.#ctor(System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.ZoneConfigSection})">
             <summary>
             Initializes a new instance of the <see cref="T:com.mirle.ibg3k0.bcf.ConfigHandler.LineConfigSection"/> class.
             </summary>
@@ -3787,7 +3787,7 @@
             </summary>
             <value>The node configuration list.</value>
         </member>
-        <member name="M:com.mirle.ibg3k0.bcf.ConfigHandler.ZoneConfigSection.#ctor(System.String,System.String,System.String,System.String,System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.NodeConfigSection})">
+        <member name="M:com.mirle.ibg3k0.bcf.ConfigHandler.ZoneConfigSection.#ctor(System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.NodeConfigSection})">
             <summary>
             Initializes a new instance of the <see cref="T:com.mirle.ibg3k0.bcf.ConfigHandler.ZoneConfigSection"/> class.
             </summary>
@@ -3852,7 +3852,13 @@
             </summary>
             <value>The eqpt configuration list.</value>
         </member>
-        <member name="M:com.mirle.ibg3k0.bcf.ConfigHandler.NodeConfigSection.#ctor(System.String,System.Int32,System.Int32,System.String,System.String,System.String,System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.EQPTConfigSection},System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.VehicleConfigSection})">
+        <member name="P:com.mirle.ibg3k0.bcf.ConfigHandler.NodeConfigSection.ShelfZoneConfigSection">
+            <summary>
+            Gets the buff configuration list.
+            </summary>
+            <value>The buff configuration list.</value>
+        </member>
+        <member name="M:com.mirle.ibg3k0.bcf.ConfigHandler.NodeConfigSection.#ctor(System.String,System.Int32,System.Int32,System.String,System.String,System.String,System.String,System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.EQPTConfigSection},System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.VehicleConfigSection},System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.ShelfZoneConfigSection})">
             <summary>
             Initializes a new instance of the <see cref="T:com.mirle.ibg3k0.bcf.ConfigHandler.NodeConfigSection"/> class.
             </summary>
@@ -3863,7 +3869,7 @@
             <param name="secsAgentName">Name of the secs agent.</param>
             <param name="eqptConfigList">The eqpt configuration list.</param>
         </member>
-        <member name="M:com.mirle.ibg3k0.bcf.ConfigHandler.NodeConfigSection.#ctor(System.String,System.Int32,System.String,System.String,System.String,System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.EQPTConfigSection},System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.VehicleConfigSection})">
+        <member name="M:com.mirle.ibg3k0.bcf.ConfigHandler.NodeConfigSection.#ctor(System.String,System.Int32,System.String,System.String,System.String,System.String,System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.EQPTConfigSection},System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.VehicleConfigSection},System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.ShelfZoneConfigSection})">
             <summary>
             Initializes a new instance of the <see cref="T:com.mirle.ibg3k0.bcf.ConfigHandler.NodeConfigSection"/> class.
             </summary>
@@ -4033,7 +4039,7 @@
             </summary>
             <value>The buff configuration list.</value>
         </member>
-        <member name="M:com.mirle.ibg3k0.bcf.ConfigHandler.EQPTConfigSection.#ctor(System.String,System.Int32,System.Int32,System.Int32,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Int32,System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.UnitConfigSection},System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.PortConfigSection},System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.BufferConfigSection},System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.PortStationConfigSection})">
+        <member name="M:com.mirle.ibg3k0.bcf.ConfigHandler.EQPTConfigSection.#ctor(System.String,System.Int32,System.Int32,System.Int32,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.Int32,System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.UnitConfigSection},System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.PortConfigSection},System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.BufferConfigSection},System.Collections.Generic.List{com.mirle.ibg3k0.bcf.ConfigHandler.PortStationConfigSection})">
             <summary>
             Initializes a new instance of the <see cref="T:com.mirle.ibg3k0.bcf.ConfigHandler.EQPTConfigSection"/> class.
             </summary>
@@ -4113,7 +4119,7 @@
             </summary>
             <value>The capacity.</value>
         </member>
-        <member name="M:com.mirle.ibg3k0.bcf.ConfigHandler.UnitConfigSection.#ctor(System.String,System.Int32,System.String,System.String,System.Int32,System.String,System.String,System.String)">
+        <member name="M:com.mirle.ibg3k0.bcf.ConfigHandler.UnitConfigSection.#ctor(System.String,System.Int32,System.String,System.String,System.Int32,System.String,System.String,System.String,System.String)">
             <summary>
             Initializes a new instance of the <see cref="T:com.mirle.ibg3k0.bcf.ConfigHandler.UnitConfigSection"/> class.
             </summary>
@@ -4164,7 +4170,7 @@
             </summary>
             <value>The capacity.</value>
         </member>
-        <member name="M:com.mirle.ibg3k0.bcf.ConfigHandler.BufferConfigSection.#ctor(System.String,System.Int32,System.Int32,System.String,System.String,System.String)">
+        <member name="M:com.mirle.ibg3k0.bcf.ConfigHandler.BufferConfigSection.#ctor(System.String,System.Int32,System.Int32,System.String,System.String,System.String,System.String)">
             <summary>
             Initializes a new instance of the <see cref="T:com.mirle.ibg3k0.bcf.ConfigHandler.BufferConfigSection"/> class.
             </summary>

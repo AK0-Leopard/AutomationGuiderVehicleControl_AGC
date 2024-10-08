@@ -22,6 +22,12 @@ namespace com.mirle.ibg3k0.sc
         Arrow_Up = 12,
         Arrow_Down = 13,
         Arrow_Left = 14,
-        Arrow_Right = 15
+        Arrow_Right = 15,
+        Straight_N27Degrees = 16,
+        Straight_27Degrees = 17,
+        Straight_N31Degrees = 18,
+        Straight_N34Degrees = 19,
+        Straight_73Degrees = 20,
+        Straight_N45Degrees = 21,
     }
 }

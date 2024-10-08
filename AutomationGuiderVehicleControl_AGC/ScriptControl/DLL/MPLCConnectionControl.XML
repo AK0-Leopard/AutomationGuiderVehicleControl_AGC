@@ -58,6 +58,23 @@
             
             </summary>
         </member>
+        <member name="M:com.mirle.ibg3k0.MPLCConnectionControl.PLCConnection.MPLCConnectionSiemens.isAlive">
+            <summary>
+            透過簡單讀取某Block，判定該Connection目前是否可用
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:com.mirle.ibg3k0.MPLCConnectionControl.PLCConnection.MPLCConnectionSiemens.Open">
+            <summary>
+            開啟此Connection
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:com.mirle.ibg3k0.MPLCConnectionControl.PLCConnection.MPLCConnectionSiemens.Close">
+            <summary>
+            
+            </summary>
+        </member>
         <member name="M:com.mirle.ibg3k0.MPLCConnectionControl.PLCConnection.MPLCConnectionMCProtocol.isAlive">
             <summary>
             透過簡單讀取某Block，判定該Connection目前是否可用

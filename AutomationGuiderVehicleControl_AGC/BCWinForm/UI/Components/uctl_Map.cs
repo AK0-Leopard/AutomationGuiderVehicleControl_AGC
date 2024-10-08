@@ -281,12 +281,12 @@ namespace com.mirle.ibg3k0.bc.winform.UI.Components
                         if (m_objItemRail[index].p_RailType == E_RAIL_TYPE.Straight_Vertical)
                         {
                             m_objItemRail[index].Tag = m_objItemRail[index].Top + "|" + m_objItemRail[index].Left + "|"
-                                + m_objItemRail[index].Height + "|" + m_objItemRail[index].p_RailWidth;
+                                + m_objItemRail[index].Height + "|" + m_objItemRail[index].p_RailWidth + "|"+ m_objItemRail[index].p_RailLength;
                         }
                         else
                         {
                             m_objItemRail[index].Tag = m_objItemRail[index].Top + "|" + m_objItemRail[index].Left + "|"
-                                + m_objItemRail[index].Width + "|" + m_objItemRail[index].p_RailWidth;
+                                + m_objItemRail[index].Width + "|" + m_objItemRail[index].p_RailWidth + "|" + m_objItemRail[index].p_RailLength;
                         }
 
                         if (m_objItemRail[index].p_RailType == E_RAIL_TYPE.Arrow_Up ||
@@ -341,7 +341,7 @@ namespace com.mirle.ibg3k0.bc.winform.UI.Components
                         m_objItemAddr[index].p_ZoomLV = adr.ZOOM_LV;
                         m_objItemAddr[index].Visible = adr.ZOOM_LV >= trackBar_scale.Value;
                         m_objItemAddr[index].Tag = m_objItemAddr[index].Top + "|" + m_objItemAddr[index].Left + "|"
-                            + m_objItemAddr[index].Height + "|" + m_objItemAddr[index].Width;
+                            + m_objItemAddr[index].Height + "|" + m_objItemAddr[index].Width + "|" + m_objItemRail[index].p_RailLength;
                     }
                     index++;
                 }
@@ -382,7 +382,7 @@ namespace com.mirle.ibg3k0.bc.winform.UI.Components
                     m_objItemPortNew[index].p_Color = BCUtility.ConvStr2Color(adr.COLOR);
 
                     m_objItemPortNew[index].Tag = m_objItemPortNew[index].Top + "|" + m_objItemPortNew[index].Left + "|"
-                                                 + m_objItemPortNew[index].Height + "|" + m_objItemPortNew[index].Width;
+                                                 + m_objItemPortNew[index].Height + "|" + m_objItemPortNew[index].Width + "|" + m_objItemRail[index].p_RailLength;
 
                     index++;
                 }
@@ -693,6 +693,7 @@ namespace com.mirle.ibg3k0.bc.winform.UI.Components
             {
                 int rail_width = (int)(double.Parse(rail.Tag.ToString().Split('|')[3]) * scaleWidth);
                 rail.setWidthByZoonInZoonOut(rail_width);
+                
                 int rail_length = (int)(double.Parse(rail.Tag.ToString().Split('|')[2]) * scaleHeigh);
                 rail.setLengthByZoonInZoonOut(rail_length);
                 rail.p_LocX = (int)(double.Parse(rail.Tag.ToString().Split('|')[1]) * scaleWidth);

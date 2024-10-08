@@ -123,6 +123,11 @@ namespace com.mirle.ibg3k0.sc.BLL
                Data: $"add vh in reserve system: vh:{vhID},x:{vehicleX},y:{vehicleY},angle:{vehicleAngle},speedMmPerSecond:{speedMmPerSecond},sensorDir:{sensorDir},forkDir:{forkDir}",
                VehicleID: vhID);
 
+            if (SCUtility.isMatche("11240", currentSectionID)||
+                SCUtility.isMatche("10402", currentSectionID))
+            {
+                currentSectionID = "";
+            }
             var regular_result = regularAngle(vehicleAngle);
             if (!regular_result.isSuccess)
             {
@@ -133,7 +138,7 @@ namespace com.mirle.ibg3k0.sc.BLL
                 vehicleAngle = regular_result.angle;
             }
             //HltResult result = mapAPI.TryAddVehicleOrUpdate(vhID, vehicleX, vehicleY, vehicleAngle, sensorDir, forkDir);
-            var hlt_vh = new HltVehicle(vhID, vehicleX, vehicleY, vehicleAngle, speedMmPerSecond, sensorDirection: sensorDir, forkDirection: forkDir, currentSectionID: currentSectionID);
+            var hlt_vh = new HltVehicle(vhID, vehicleX, vehicleY, vehicleAngle, (int)speedMmPerSecond, sensorDirection: sensorDir, forkDirection: forkDir, currentSectionID: currentSectionID);
             HltResult result = mapAPI.TryAddOrUpdateVehicle(hlt_vh);
             mapAPI.KeepRestSection(hlt_vh);
             onReserveStatusChange();
@@ -460,7 +465,7 @@ namespace com.mirle.ibg3k0.sc.BLL
 
 
                     //Mirle.Hlts.Utils.HltDirection hltDirection = Mirle.Hlts.Utils.HltDirection.None;
-                    Mirle.Hlts.Utils.HltDirection hltDirection = Mirle.Hlts.Utils.HltDirection.ForwardReverse;
+                    Mirle.Hlts.Utils.HltDirection hltDirection = Mirle.Hlts.Utils.HltDirection.ForwardBackword;
                     var check_result = vh.CurrentGuideData.tryGetWalkDirOnSection(reserve_section_id);
                     if (check_result.isExist)
                     {
@@ -470,7 +475,7 @@ namespace com.mirle.ibg3k0.sc.BLL
                                 hltDirection = HltDirection.Forward;
                                 break;
                             case DriveDirction.DriveDirReverse:
-                                hltDirection = HltDirection.Reverse;
+                                hltDirection = HltDirection.Backward;
                                 break;
                         }
                     }

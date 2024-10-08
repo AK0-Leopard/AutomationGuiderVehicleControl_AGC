@@ -208,6 +208,25 @@ namespace com.mirle.ibg3k0.bc.winform.UI.Components
                         double radius = S * (2 / Math.PI);
                         this.Width = (int)radius;
                         break;
+                    case E_RAIL_TYPE.Straight_N27Degrees:
+                    case E_RAIL_TYPE.Straight_27Degrees:
+                    case E_RAIL_TYPE.Straight_N31Degrees:
+                    case E_RAIL_TYPE.Straight_N34Degrees:
+                    case E_RAIL_TYPE.Straight_73Degrees:
+                    case E_RAIL_TYPE.Straight_N45Degrees:
+                        m_RailLength_Pixel = BCUtility.RealLengthToPixelsWidthByScale(m_iRailLength);
+                        // 將角度轉換為弧度
+                        double radians = GetAngle(p_RailType) * (Math.PI / 180);
+
+                        float endX = (float)(m_RailLength_Pixel * Math.Cos(radians));
+                        float endY = (float)(m_RailLength_Pixel * Math.Sin(radians));
+                        float hight = endY;
+                        if (hight < 0) hight = -hight;
+
+                        this.Width = (int)Math.Abs(endX);
+                        this.Height = (int)Math.Abs(hight);
+                        break;
+
                     default:
 
                         break;
@@ -282,81 +301,108 @@ namespace com.mirle.ibg3k0.bc.winform.UI.Components
             //_SetRailImage();
         }
 
+        private bool isSlash()
+        {
+            switch (m_eRailType)
+            {
+                case E_RAIL_TYPE.Straight_N27Degrees:
+                case E_RAIL_TYPE.Straight_27Degrees:
+                case E_RAIL_TYPE.Straight_N31Degrees:
+                case E_RAIL_TYPE.Straight_N34Degrees:
+                case E_RAIL_TYPE.Straight_73Degrees:
+                case E_RAIL_TYPE.Straight_N45Degrees:
+                    return true;
+                default:
+                    return false;
+            }
+        }
         //// 重写OnPaint，每当绘画时发生
-        //protected override void OnPaint(PaintEventArgs e)
-        //{
-        //    base.OnPaint(e);
-        //    //try
-        //    //{
-        //    //    //做一张背景透明的位图当做绘制内容
-        //    //    //若已有Image属性被指定，则画该图
-        //    //    //由于e的绘制区域总是在变，这里不需要考虑绘制区域，系统会自己算，超出区域的不予以绘制
-        //    //    //简单刷原理就是，每当系统要绘制时，先画背景，我们自行处理就需要计算应该画哪个区域（多数都是不规则的区域并集）
-        //    //    //每当OnPaint时，绘制自己的Image图（若属性存在），或者是纯透明的位图以提供完全透明效果
-        //    //    if (objImage == null) return;
-        //    //    var bitMap = new Bitmap(objImage);
-        //    //    bitMap.MakeTransparent(Color.White);
-        //    //    objImage = bitMap;
-        //    //    //绘制模式指定
-        //    //    Graphics g = e.Graphics;
-        //    //    g.SmoothingMode = SmoothingMode.AntiAlias;
-        //    //    g.PixelOffsetMode = PixelOffsetMode.HighQuality;
-        //    //    g.CompositingQuality = CompositingQuality.GammaCorrected;
-        //    //    //透明色变换
-        //    //    float[][] mtxItens = {
-        //    //                new float[] {1,0,0,0,0},
-        //    //                new float[] {0,1,0,0,0},
-        //    //                new float[] {0,0,1,0,0},
-        //    //                new float[] {0,0,0,1,0},
-        //    //                new float[] {0,0,0,0,1}};
-        //    //    ColorMatrix colorMatrix = new ColorMatrix(mtxItens);
-        //    //    ImageAttributes imgAtb = new ImageAttributes();
-        //    //    imgAtb.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-        //    //    //画
-        //    //    g.DrawImage(objImage, ClientRectangle, 0.0f, 0.0f, objImage.Width, objImage.Height, GraphicsUnit.Pixel, imgAtb);
-        //    //}
-        //    //catch { }
-        //}
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            if (!isSlash())
+            {
+                base.OnPaint(e);
+                return;
+            }
+
+            //base.OnPaint(e);
+            try
+            {
+                //做一张背景透明的位图当做绘制内容
+                //若已有Image属性被指定，则画该图
+                //由于e的绘制区域总是在变，这里不需要考虑绘制区域，系统会自己算，超出区域的不予以绘制
+                //简单刷原理就是，每当系统要绘制时，先画背景，我们自行处理就需要计算应该画哪个区域（多数都是不规则的区域并集）
+                //每当OnPaint时，绘制自己的Image图（若属性存在），或者是纯透明的位图以提供完全透明效果
+                if (objImage == null) return;
+                var bitMap = new Bitmap(objImage);
+                bitMap.MakeTransparent(Color.White);
+                objImage = bitMap;
+                //绘制模式指定
+                Graphics g = e.Graphics;
+                g.SmoothingMode = SmoothingMode.AntiAlias;
+                g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+                g.CompositingQuality = CompositingQuality.GammaCorrected;
+                //透明色变换
+                float[][] mtxItens = {
+                            new float[] {1,0,0,0,0},
+                            new float[] {0,1,0,0,0},
+                            new float[] {0,0,1,0,0},
+                            new float[] {0,0,0,1,0},
+                            new float[] {0,0,0,0,1}};
+                ColorMatrix colorMatrix = new ColorMatrix(mtxItens);
+                ImageAttributes imgAtb = new ImageAttributes();
+                imgAtb.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                //画
+                g.DrawImage(objImage, ClientRectangle, 0.0f, 0.0f, objImage.Width, objImage.Height, GraphicsUnit.Pixel, imgAtb);
+            }
+            catch { }
+        }
         ////控件背景绘制
-        //protected override void OnPaintBackground(PaintEventArgs e)
-        //{
-        //    base.OnPaintBackground(e);
-        //    //try
-        //    //{
-        //    //    base.OnPaintBackground(e);
-        //    //    Graphics g = e.Graphics;
-        //    //    //以下代码提取控件原来应有的背景（视觉上的位图，可能会包括其他空间的部分图形）到位图，进行变换后绘制
-        //    //    if (Parent != null)
-        //    //    {
-        //    //        BackColor = Color.Transparent;
-        //    //        //本控件在父控件的子集中的index
-        //    //        int index = Parent.Controls.GetChildIndex(this);
-        //    //        for (int i = Parent.Controls.Count - 1; i > index; i--)
-        //    //        {
-        //    //            //对每一个父控件的可视子控件，进行绘制区域交集运算，得到应该绘制的区域
-        //    //            Control c = Parent.Controls[i];
-        //    //            //如果有交集且可见
-        //    //            if (c.Bounds.IntersectsWith(Bounds) && c.Visible)
-        //    //            {
-        //    //                //矩阵变换
-        //    //                Bitmap bmp = new Bitmap(c.Width, c.Height, g);
-        //    //                c.DrawToBitmap(bmp, c.ClientRectangle);
-        //    //                g.TranslateTransform(c.Left - Left, c.Top - Top);
-        //    //                //画图
-        //    //                g.DrawImageUnscaled(bmp, Point.Empty);
-        //    //                g.TranslateTransform(Left - c.Left, Top - c.Top);
-        //    //                bmp.Dispose();
-        //    //            }
-        //    //        }
-        //    //    }
-        //    //    else
-        //    //    {
-        //    //        g.Clear(Parent.BackColor);
-        //    //        g.FillRectangle(new SolidBrush(Color.FromArgb(255, Color.Transparent)), this.ClientRectangle);
-        //    //    }
-        //    //}
-        //    //catch { }
-        //}
+        protected override void OnPaintBackground(PaintEventArgs e)
+        {
+            if (!isSlash())
+            {
+                base.OnPaintBackground(e);
+                return;
+            }
+
+            //base.OnPaintBackground(e);
+            try
+            {
+                base.OnPaintBackground(e);
+                Graphics g = e.Graphics;
+                //以下代码提取控件原来应有的背景（视觉上的位图，可能会包括其他空间的部分图形）到位图，进行变换后绘制
+                if (Parent != null)
+                {
+                    BackColor = Color.Transparent;
+                    //本控件在父控件的子集中的index
+                    int index = Parent.Controls.GetChildIndex(this);
+                    for (int i = Parent.Controls.Count - 1; i > index; i--)
+                    {
+                        //对每一个父控件的可视子控件，进行绘制区域交集运算，得到应该绘制的区域
+                        Control c = Parent.Controls[i];
+                        //如果有交集且可见
+                        if (c.Bounds.IntersectsWith(Bounds) && c.Visible)
+                        {
+                            //矩阵变换
+                            Bitmap bmp = new Bitmap(c.Width, c.Height, g);
+                            c.DrawToBitmap(bmp, c.ClientRectangle);
+                            g.TranslateTransform(c.Left - Left, c.Top - Top);
+                            //画图
+                            g.DrawImageUnscaled(bmp, Point.Empty);
+                            g.TranslateTransform(Left - c.Left, Top - c.Top);
+                            bmp.Dispose();
+                        }
+                    }
+                }
+                else
+                {
+                    g.Clear(Parent.BackColor);
+                    g.FillRectangle(new SolidBrush(Color.FromArgb(255, Color.Transparent)), this.ClientRectangle);
+                }
+            }
+            catch { }
+        }
         #endregion	/* Constructor／Destructor */
 
         #region "Publish Process"
@@ -395,6 +441,27 @@ namespace com.mirle.ibg3k0.bc.winform.UI.Components
                 case E_RAIL_TYPE.Curve_270to360:
                     this.Width = Length;
                     break;
+                //case E_RAIL_TYPE.Straight_N27Degrees:
+                //case E_RAIL_TYPE.Straight_27Degrees:
+                //case E_RAIL_TYPE.Straight_N31Degrees:
+                //case E_RAIL_TYPE.Straight_N34Degrees:
+                //case E_RAIL_TYPE.Straight_73Degrees:
+                //case E_RAIL_TYPE.Straight_N45Degrees:
+                //    this.Width = Length;
+                //    break;
+                //    m_RailLength_Pixel = Length;
+                //    // 將角度轉換為弧度
+                //    double radians = GetAngle(p_RailType) * (Math.PI / 180);
+
+                //    float endX = (float)(m_RailLength_Pixel * Math.Cos(radians));
+                //    float endY = (float)(m_RailLength_Pixel * Math.Sin(radians));
+                //    float hight = endY;
+                //    if (hight < 0) hight = -hight;
+
+                //    this.Width = (int)Math.Abs(endX);
+                //    this.Height = (int)Math.Abs(hight);
+                //    break;
+
                 default:
 
                     break;
@@ -429,12 +496,89 @@ namespace com.mirle.ibg3k0.bc.winform.UI.Components
                 case E_RAIL_TYPE.Arrow_Right:
                     _CreateArrow();
                     break;
-
+                case E_RAIL_TYPE.Straight_N27Degrees:
+                case E_RAIL_TYPE.Straight_27Degrees:
+                case E_RAIL_TYPE.Straight_N31Degrees:
+                case E_RAIL_TYPE.Straight_N34Degrees:
+                case E_RAIL_TYPE.Straight_73Degrees:
+                case E_RAIL_TYPE.Straight_N45Degrees:
+                    _CreateNDegreeLine(m_eRailType);
+                    break;
             }
         }
         Image objImage;
         Graphics objRail;
+        private void _CreateNDegreeLine(E_RAIL_TYPE type)
+        {
+            try
+            {
+                // 將角度轉換為弧度
+                double radians = GetAngle(type) * (Math.PI / 180);
 
+                // 計算 30 度直線的終點
+                float startX = 0;
+                float startY = 0;
+
+                var pixels_length = BCUtility.RealLengthToPixelsWidthByScale(m_iRailLength);
+
+                //var pixels_length = (int)m_RailLength_Pixel;
+
+                float endX = startX + (float)(pixels_length * Math.Cos(radians));
+                float endY = startY + (float)(pixels_length * Math.Sin(radians));
+
+                float hight = endY;
+                if (hight < 0) hight = -hight;
+
+                // 確保 newWidth 和 newHeight 考慮到直線的方向和位置
+                //int newWidth = (int)Math.Max(Math.Abs(endX - m_iLocX), this.Width);
+                //int newHeight = (int)Math.Max(Math.Abs(endY - m_iLocY), this.Height);
+                this.Width = (int)Math.Ceiling(endX);
+                this.Height = (int)Math.Ceiling(hight);
+                objImage = new Bitmap(Width, Height);
+                objRail = Graphics.FromImage(objImage);
+
+                // 繪製 30 度直線
+                using (Pen pen = new Pen(m_clrRailColor, m_iRailWidth))
+                {
+                    if (endY < 0)
+                    {
+                        startY = startY - endY;
+                        endY = endY - endY;
+                    }
+                    pen.Alignment = PenAlignment.Inset;
+                    objRail.DrawLine(pen, new PointF(startX, startY), new PointF(endX, endY));
+                }
+                m_pPoints[0] = new PointObject(this, new PointF(0, 0), PointType.Left);
+                m_pPoints[1] = new PointObject(this, new PointF(endX, endY), PointType.Right);
+
+                this.BackgroundImage = objImage;
+            }
+            catch
+            {
+
+            }
+
+        }
+        private double GetAngle(E_RAIL_TYPE type)
+        {
+            switch (type)
+            {
+                case E_RAIL_TYPE.Straight_N27Degrees:
+                    return -27;
+                case E_RAIL_TYPE.Straight_27Degrees:
+                    return 27;
+                case E_RAIL_TYPE.Straight_N31Degrees:
+                    return -31;
+                case E_RAIL_TYPE.Straight_N34Degrees:
+                    return -34;
+                case E_RAIL_TYPE.Straight_73Degrees:
+                    return 73;
+                case E_RAIL_TYPE.Straight_N45Degrees:
+                    return 45;
+            }
+            return 0;
+
+        }
         private void _CreateLine()
         {
             SolidBrush objBrush;
@@ -1066,7 +1210,7 @@ namespace com.mirle.ibg3k0.bc.winform.UI.Components
             vh.CurrentSecID = Section_ID;
             refreshVehicleLoaction(vh, sec_dis, driveDirction);
         }
-    
+
 
         private void refreshVehicleLoaction(uctlNewVehicle vh, double sec_dis, sc.ProtocolFormat.OHTMessage.DriveDirction driveDirction)
         {
@@ -1158,7 +1302,7 @@ namespace com.mirle.ibg3k0.bc.winform.UI.Components
             }
         }
 
-    
+
 
         private uctlRail findTheMatchingRail(double sec_dis, out int _railInterval)
         {

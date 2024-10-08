@@ -35,6 +35,7 @@ using com.mirle.ibg3k0.sc.WIF;
 using com.mirle.ibg3k0.stc.Common.SECS;
 using ExcelDataReader;
 using GenericParsing;
+using Mirle.Hlts.Utils;
 using Nancy;
 using Nancy.Hosting.Self;
 using NLog;
@@ -627,6 +628,16 @@ namespace com.mirle.ibg3k0.sc.App
 
                 if (sectionPath == null) sectionPath = $@"{map_info_path}\MapInfo\ASECTION.csv";
                 reserveSectionAPI.LoadMapSections(sectionPath);
+
+                reserveSectionAPI.MakeAdjacentAddressesAndSections();
+
+                reserveSectionAPI.ReservedSectionColor = new HltScalar(255, 128, 0);
+                reserveSectionAPI.SensorColor = new HltScalar(128, 255, 0);
+                reserveSectionAPI.VehicleColor = new HltScalar(51, 153, 255);
+                reserveSectionAPI.MapPointColor = new HltScalar(133, 21, 199);
+                reserveSectionAPI.MapLineColor = new HltScalar(128, 128, 128);
+                reserveSectionAPI.MapBitmapBackgroundColor = new HltScalar(255, 255, 255);
+
             }
             finally { }
         }
@@ -650,7 +661,8 @@ namespace com.mirle.ibg3k0.sc.App
         {
             HostConfiguration hostConfigs = new HostConfiguration()
             {
-                UrlReservations = new UrlReservations() { CreateAutomatically = true }
+                UrlReservations = new UrlReservations() { CreateAutomatically = true },
+                RewriteLocalhost = false
             };
             //NancyHost = new NancyHost(new Uri("http://localhost:3280"), new DefaultNancyBootstrapper(), hostConfigs);
             NancyHost = new NancyHost(new Uri("http://localhost:3281"), new DefaultNancyBootstrapper(), hostConfigs);
