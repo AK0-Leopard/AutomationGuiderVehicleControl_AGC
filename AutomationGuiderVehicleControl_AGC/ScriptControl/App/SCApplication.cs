@@ -661,8 +661,7 @@ namespace com.mirle.ibg3k0.sc.App
         {
             HostConfiguration hostConfigs = new HostConfiguration()
             {
-                UrlReservations = new UrlReservations() { CreateAutomatically = true },
-                RewriteLocalhost = false
+                UrlReservations = new UrlReservations() { CreateAutomatically = true }
             };
             //NancyHost = new NancyHost(new Uri("http://localhost:3280"), new DefaultNancyBootstrapper(), hostConfigs);
             NancyHost = new NancyHost(new Uri("http://localhost:3281"), new DefaultNancyBootstrapper(), hostConfigs);

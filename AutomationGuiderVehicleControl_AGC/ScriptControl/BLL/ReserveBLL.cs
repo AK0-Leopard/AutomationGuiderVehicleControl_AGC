@@ -123,6 +123,7 @@ namespace com.mirle.ibg3k0.sc.BLL
                Data: $"add vh in reserve system: vh:{vhID},x:{vehicleX},y:{vehicleY},angle:{vehicleAngle},speedMmPerSecond:{speedMmPerSecond},sensorDir:{sensorDir},forkDir:{forkDir}",
                VehicleID: vhID);
 
+            //在特定路段上，不進行邊走邊釋放的功能
             if (SCUtility.isMatche("11240", currentSectionID)||
                 SCUtility.isMatche("10402", currentSectionID))
             {
