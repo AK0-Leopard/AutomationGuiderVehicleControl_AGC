@@ -804,7 +804,7 @@ namespace com.mirle.ibg3k0.sc.Service
                 try
                 {
                     scApp.ReportBLL.newReportRunTimetatus(vh.VEHICLE_ID);
-                    scApp.ReportBLL.newReportBettryValus(vh.VEHICLE_ID);
+                    scApp.ReportBLL.newReportBettryValue(vh.VEHICLE_ID);
                 }
                 catch (Exception ex)
                 {
@@ -3483,7 +3483,7 @@ namespace com.mirle.ibg3k0.sc.Service
             AVEHICLE vh = sender as AVEHICLE;
             try
             {
-                scApp.ReportBLL.newReportBettryValus(vh.VEHICLE_ID);
+                scApp.ReportBLL.newReportBettryValue(vh.VEHICLE_ID);
             }
             catch (Exception ex)
             {

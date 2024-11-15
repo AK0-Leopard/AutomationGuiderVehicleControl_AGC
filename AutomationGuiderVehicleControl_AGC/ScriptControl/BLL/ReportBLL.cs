@@ -440,13 +440,15 @@ namespace com.mirle.ibg3k0.sc.BLL
         public bool newReportRunTimetatus(string vhID)
         {
             bool isSuccsess = true;
-            //isSuccsess = isSuccsess && iBSEMDriver.S6F11SendRunTimeStatus(vhID, null);
+            if (SystemParameter.IsReportRunTimeStatus)
+                isSuccsess = isSuccsess && iBSEMDriver.S6F11SendRunTimeStatus(vhID, null);
             return isSuccsess;
         }
-        public bool newReportBettryValus(string vhID)
+        public bool newReportBettryValue(string vhID)
         {
             bool isSuccsess = true;
-            //isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleBatteryValus(vhID, null);
+            if (SystemParameter.IsReportBettryValue)
+                isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleBatteryValus(vhID, null);
             return isSuccsess;
         }
 
@@ -593,13 +595,16 @@ namespace com.mirle.ibg3k0.sc.BLL
         public bool newReportVehicleAuto(string vhID, List<AMCSREPORTQUEUE> reportqueues)
         {
             bool isSuccsess = true;
-            //isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleAuto(vhID, reportqueues);
+            if (SystemParameter.IsReportVhAutoManual)
+                isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleAuto(vhID, reportqueues);
             return isSuccsess;
         }
         public bool newReportVehicleManual(string vhID, List<AMCSREPORTQUEUE> reportqueues)
         {
             bool isSuccsess = true;
-            //isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleManual(vhID, reportqueues);
+            if (SystemParameter.IsReportVhAutoManual)
+
+                isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleManual(vhID, reportqueues);
             return isSuccsess;
         }
         public bool newReportCarrierInstalled(string vhID, string carrierID, string location, List<AMCSREPORTQUEUE> reportqueues)
@@ -633,7 +638,7 @@ namespace com.mirle.ibg3k0.sc.BLL
         {
             string alcd = SCAppConstants.AlarmStatus.convert2MCS(alarm_status);
             string alid = error_code;
-            string altx = $"[{SCUtility.Trim(vhID, true) }]{desc}";
+            string altx = $"[{SCUtility.Trim(vhID, true)}]{desc}";
             iBSEMDriver.S6F11SendUnitAlarmSet(vhID, transferID, alid, altx);
             iBSEMDriver.S5F1SendAlarmReport(alcd, alid, altx);
             return true;
@@ -642,7 +647,7 @@ namespace com.mirle.ibg3k0.sc.BLL
         {
             string alcd = SCAppConstants.AlarmStatus.convert2MCS(alarm_status);
             string alid = error_code;
-            string altx = $"[{SCUtility.Trim(vhID, true) }]{desc}";
+            string altx = $"[{SCUtility.Trim(vhID, true)}]{desc}";
             iBSEMDriver.S6F11SendUnitAlarmCleared(vhID, transferID, alid, altx);
             iBSEMDriver.S5F1SendAlarmReport(alcd, alid, altx);
             return true;

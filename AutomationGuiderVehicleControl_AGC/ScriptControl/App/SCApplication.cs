@@ -565,6 +565,9 @@ namespace com.mirle.ibg3k0.sc.App
             //bdTableWatcher = new DBTableWatcher(this);
             SystemParameter.setCstMaxWaitTime(getInt("CSTMaxWaitTime", 0));
             SystemParameter.setLongestFullyChargedIntervalTime(getInt("LongestFullyChargedIntervalTime", 15));
+            SystemParameter.setIsReportBettryValue(getBoolean("IsReportBettryValue", true));
+            SystemParameter.setIsReportVhAutoManual(getBoolean("IsReportVhAutoManual", true));
+            SystemParameter.setIsReportRunTimeStatus(getBoolean("IsReportRunTimeStatus", true));
             //updataSectionDistance();
         }
 
@@ -583,7 +586,7 @@ namespace com.mirle.ibg3k0.sc.App
                     SectionBLL.dataBase.updateSecDistance(s.SEC_ID, distance);
                 }
                 else
-                { 
+                {
                 }
             }
         }
@@ -1225,7 +1228,34 @@ namespace com.mirle.ibg3k0.sc.App
             }
             return rtn;
         }
-
+        public Boolean getBoolean(string key, Boolean defaultValue)
+        {
+            Boolean rtn = defaultValue;
+            try
+            {
+                string val = ConfigurationManager.AppSettings.Get(key);
+                if (val != null)  //A0.09
+                {
+                    if (BCFUtility.isMatche(val, "Y"))
+                    {
+                        rtn = true;
+                    }
+                    else
+                    {
+                        rtn = false;
+                    }
+                }
+                else
+                {
+                    return defaultValue;    //A0.09
+                }
+            }
+            catch (Exception e)
+            {
+                logger.Warn("Get Config error[key:{0}][Exception:{1}]", key, e);
+            }
+            return rtn;
+        }
 
         public DBConnection getDBConnection()
         {
@@ -1683,6 +1713,9 @@ namespace com.mirle.ibg3k0.sc.App
 
         public static int OpenAGVStationCoverDistance_mm = 0;
         public static bool IsByPassAGVShelfStatus { get; private set; } = true;
+        public static bool IsReportVhAutoManual { get; private set; } = true;
+        public static bool IsReportBettryValue { get; private set; } = true;
+        public static bool IsReportRunTimeStatus { get; private set; } = true;
 
         public static int TransferCommandExcuteTimeOut_mSec = 1800000;
 
@@ -1752,7 +1785,18 @@ namespace com.mirle.ibg3k0.sc.App
         {
             TransferCommandTimePriorityIncrement = _TransferCommandTimePriorityIncrement;
         }
-
+        public static void setIsReportVhAutoManual(bool _IsReportVhAutoManual)
+        {
+            IsReportVhAutoManual = _IsReportVhAutoManual;
+        }
+        public static void setIsReportBettryValue(bool _IsReportBettryValue)
+        {
+            IsReportBettryValue = _IsReportBettryValue;
+        }
+        public static void setIsReportRunTimeStatus(bool _IsReportRunTimeStatus)
+        {
+            IsReportRunTimeStatus = _IsReportRunTimeStatus;
+        }
     }
 
     public class HAProxyConnectionTest
