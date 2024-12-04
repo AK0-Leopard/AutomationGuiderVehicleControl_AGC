@@ -204,10 +204,10 @@ namespace com.mirle.ibg3k0.bc.winform.UI.Components
             }
             else if (BCFUtility.isMatche(mainForm.BCApp.SCApplication.BC_ID, SCAppConstants.WorkVersion.VERSION_NAME_AGC))
             {
-                space_Height_m = 35000; //AGVC 地圖地圖大小
-                space_Width_m = 135000;
+                space_Height_m = 30000; //AGC 地圖地圖大小
+                space_Width_m = 68000;
                 zoon_Factor = 130;
-                defaultMaxScale = 15;
+                defaultMaxScale = 10;
             }
             else if (BCFUtility.isMatche(mainForm.BCApp.SCApplication.BC_ID, SCAppConstants.WorkVersion.VERSION_NAME_AT_S))
             {
