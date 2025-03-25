@@ -2971,7 +2971,16 @@ namespace com.mirle.ibg3k0.sc.Service
                                 //                                    E_CMD_TYPE.Move,
                                 //                                    string.Empty,
                                 //                                    avoid_address);
-                                bool is_success = service.Command.Move(reserved_vh.VEHICLE_ID, avoid_address).isSuccess;
+                                bool is_success = false;
+                                if (reserved_vh.ACT_STATUS == VHActionStatus.NoCommand)
+                                {
+                                    is_success = service.Command.Move(reserved_vh.VEHICLE_ID, avoid_address).isSuccess;
+                                }
+                                else
+                                {
+                                    var avoid_request_result = service.Send.Avoid(reserved_vh.VEHICLE_ID, avoid_address);
+                                    is_success = avoid_request_result.is_success;
+                                }
                                 LogHelper.Log(logger: logger, LogLevel: LogLevel.Info, Class: nameof(VehicleService), Device: DEVICE_NAME_AGV,
                                    Data: $"Try to notify vh avoid,requestVh:{requestVhID} reservedVh:{reservedVhID}, is success :{is_success}.",
                                    VehicleID: requestVhID);
@@ -3048,7 +3057,7 @@ namespace com.mirle.ibg3k0.sc.Service
             }
 
             private bool IsBlockEachOrther(AVEHICLE reserved_vh, AVEHICLE request_vh)
-            {
+            { 
                 return (reserved_vh.CanNotReserveInfo != null && request_vh.CanNotReserveInfo != null) &&
                         SCUtility.isMatche(reserved_vh.CanNotReserveInfo.ReservedVhID, request_vh.VEHICLE_ID) &&
                         SCUtility.isMatche(request_vh.CanNotReserveInfo.ReservedVhID, reserved_vh.VEHICLE_ID);
@@ -3100,7 +3109,7 @@ namespace com.mirle.ibg3k0.sc.Service
                 {
                     bool is_can = reservedVh.isTcpIpConnect &&
                            (reservedVh.MODE_STATUS == VHModeStatus.AutoRemote || reservedVh.MODE_STATUS == VHModeStatus.AutoCharging || reservedVh.MODE_STATUS == VHModeStatus.AutoLocal) &&
-                           reservedVh.ACT_STATUS == VHActionStatus.NoCommand &&
+                           //reservedVh.ACT_STATUS == VHActionStatus.NoCommand &&
                            !scApp.CMDBLL.isCMD_OHTCQueueByVh(reservedVh.VEHICLE_ID);
                     //!scApp.CMDBLL.HasCMD_MCSInQueue();
                     return (is_can, CAN_NOT_AVOID_RESULT.Normal);

@@ -50,6 +50,7 @@ using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace com.mirle.ibg3k0.sc.App
@@ -565,9 +566,7 @@ namespace com.mirle.ibg3k0.sc.App
             //bdTableWatcher = new DBTableWatcher(this);
             SystemParameter.setCstMaxWaitTime(getInt("CSTMaxWaitTime", 0));
             SystemParameter.setLongestFullyChargedIntervalTime(getInt("LongestFullyChargedIntervalTime", 15));
-            SystemParameter.setIsReportBettryValue(getBoolean("IsReportBettryValue", true));
-            SystemParameter.setIsReportVhAutoManual(getBoolean("IsReportVhAutoManual", true));
-            SystemParameter.setIsReportRunTimeStatus(getBoolean("IsReportRunTimeStatus", true));
+            SystemParameter.setAllowIdleTime(getInt("AllowVhIdleTime", 60000));
             //updataSectionDistance();
         }
 
@@ -1719,6 +1718,7 @@ namespace com.mirle.ibg3k0.sc.App
 
         public static int TransferCommandExcuteTimeOut_mSec = 1800000;
 
+        
         public static int AllowVhIdleTime_ms = 10000;//預設改為10秒
         //public static int AllowVhIdleTime_ms = 300000;
         public static int TransferCommandTimePriorityIncrement = 1;
@@ -1747,6 +1747,11 @@ namespace com.mirle.ibg3k0.sc.App
         public static void setCstMaxWaitTime(int cSTMaxWaitTime)
         {
             CSTMaxWaitTime = cSTMaxWaitTime;
+        }
+
+        public static void setAllowIdleTime(int allowIdleTime)
+        {
+            AllowVhIdleTime_ms = allowIdleTime;
         }
 
         public static void setAutoOverride(bool autoOverride)
