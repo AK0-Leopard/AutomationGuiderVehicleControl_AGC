@@ -1237,7 +1237,8 @@ namespace com.mirle.ibg3k0.sc.Service
                         return;
                     }
                     scApp.TransferBLL.db.transfer.updateTranStatus2Transferring(transfer_id, is_need_wait_orther_port_wait_in);
-                    List<AMCSREPORTQUEUE> reportqueues = new List<AMCSREPORTQUEUE>();
+                    //List<AMCSREPORTQUEUE> reportqueues = new List<AMCSREPORTQUEUE>();
+                    List<AMCSREPORTQUEUE> reportqueues = null;
                     using (TransactionScope tx = SCUtility.getTransactionScope())
                     {
                         using (DBConnection_EF con = DBConnection_EF.GetUContext())
@@ -1252,7 +1253,7 @@ namespace com.mirle.ibg3k0.sc.Service
                             {
                                 return;
                             }
-                            scApp.ReportBLL.insertMCSReport(reportqueues);
+                            //scApp.ReportBLL.insertMCSReport(reportqueues);
                         }
 
                         Boolean resp_cmp = replyTranEventReport(bcfApp, eventType, vh, seqNum, cmdID, actionType: replyActionType);
@@ -1658,7 +1659,8 @@ namespace com.mirle.ibg3k0.sc.Service
                         return;
                     }
                     scApp.TransferBLL.db.transfer.updateTranStatus2UnloadComplete(cmd.TRANSFER_ID);
-                    List<AMCSREPORTQUEUE> reportqueues = new List<AMCSREPORTQUEUE>();
+                    //List<AMCSREPORTQUEUE> reportqueues = new List<AMCSREPORTQUEUE>();
+                    List<AMCSREPORTQUEUE> reportqueues = null;
                     using (TransactionScope tx = SCUtility.getTransactionScope())
                     {
                         using (DBConnection_EF con = DBConnection_EF.GetUContext())
@@ -1676,7 +1678,7 @@ namespace com.mirle.ibg3k0.sc.Service
                             {
                                 return;
                             }
-                            scApp.ReportBLL.insertMCSReport(reportqueues);
+                            //scApp.ReportBLL.insertMCSReport(reportqueues);
                             Task.Run(() => scApp.ReportBLL.newSendMCSMessage(reportqueues));
                         }
                         //如果是swap的vh 他在放置貨物位置將會是虛擬port，需要看最後車子上報的位置來決定更新到哪邊

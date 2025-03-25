@@ -375,8 +375,8 @@ namespace com.mirle.ibg3k0.sc.BLL
             bool isSuccsess = true;
             isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleAcquireCompleted(cmdID, reportqueues);
             //if (bcrReadResult == BCRReadResult.BcrNormal) //todo kevin 要將 departed 移至144的離開事件中
-            isSuccsess = isSuccsess && iBSEMDriver.S6F11SendCarrierInstalled(cmdID, reportqueues);
-            isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleDeparted(cmdID, reportqueues);
+            //isSuccsess = isSuccsess && iBSEMDriver.S6F11SendCarrierInstalled(cmdID, reportqueues);
+            //isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleDeparted(cmdID, reportqueues);
             return isSuccsess;
         }
         public bool newReportLoadComplete(string vhID, string carrierID, string location, List<AMCSREPORTQUEUE> reportqueues)
@@ -414,7 +414,7 @@ namespace com.mirle.ibg3k0.sc.BLL
         public bool newReportUnloadComplete(string cmdID, List<AMCSREPORTQUEUE> reportqueues)
         {
             bool isSuccsess = true;
-            isSuccsess = isSuccsess && iBSEMDriver.S6F11SendCarrierRemoved(cmdID, reportqueues);
+            //isSuccsess = isSuccsess && iBSEMDriver.S6F11SendCarrierRemoved(cmdID, reportqueues);
             isSuccsess = isSuccsess && iBSEMDriver.S6F11SendVehicleDepositCompleted(cmdID, reportqueues);
             return isSuccsess;
         }
@@ -630,6 +630,10 @@ namespace com.mirle.ibg3k0.sc.BLL
 
         public void newSendMCSMessage(List<AMCSREPORTQUEUE> reportqueues)
         {
+            if (reportqueues == null || !reportqueues.Any())
+            {
+                return;
+            }
             foreach (AMCSREPORTQUEUE queue in reportqueues)
                 iBSEMDriver.S6F11SendMessage(queue);
         }

@@ -1512,7 +1512,8 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AGC
                 AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Vehicle_Acquire_Completed, vid_collection);
                 if (reportQueues == null)
                 {
-                    S6F11SendMessage(mcs_queue);
+                    if (!S6F11SendMessage(mcs_queue))
+                        return false;
                 }
                 else
                 {
@@ -1616,7 +1617,8 @@ namespace com.mirle.ibg3k0.sc.Data.ValueDefMapAction.AGC
                 AMCSREPORTQUEUE mcs_queue = S6F11BulibMessage(SECSConst.CEID_Vehicle_Deposit_Completed, vid_collection);
                 if (reportQueues == null)
                 {
-                    S6F11SendMessage(mcs_queue);
+                    if (!S6F11SendMessage(mcs_queue))
+                        return false;
                 }
                 else
                 {
